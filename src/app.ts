@@ -8,6 +8,7 @@ import { loadSigningKey, sha256Hex, signHead } from "./chain";
 import { CDP_FACILITATOR_URL, cdpAuthHeaders } from "./cdp";
 import { DISCOVERY, SERVICE } from "./discovery";
 import { llmsTxt } from "./llms";
+import { openApi } from "./openapi";
 import { RETIRED_SIGNING_KEYS } from "./policy";
 
 type C = Context<{ Bindings: Env }>;
@@ -117,7 +118,7 @@ async function paywallFor(env: Env): Promise<MiddlewareHandler> {
 }
 
 // Free routes never touch the facilitator.
-const FREE = new Set(["/", "/menu", "/head", "/stats", "/llms.txt"]);
+const FREE = new Set(["/", "/menu", "/head", "/stats", "/llms.txt", "/openapi.json"]);
 
 // ---- success metric: who pays, and who comes back --------------------------------------------------
 const PAID_CALLS: Record<string, keyof typeof PRICES> = { "POST /write": "write", "GET /read": "read", "POST /renew": "renew", "GET /export": "export" };
@@ -196,7 +197,7 @@ export function createApp(opts: { paywall: boolean }) {
         { call: "POST /renew", price: PRICES.renew },
         { call: "GET /export?since=", price: PRICES.export },
       ],
-      free: ["GET /menu", "GET /head?wallet=0x...", "GET /stats", "GET /llms.txt"],
+      free: ["GET /menu", "GET /head?wallet=0x...", "GET /stats", "GET /llms.txt", "GET /openapi.json"],
       policy: {
         termDays: POLICY.TERM_MS / 86_400_000,
         graceDays: POLICY.GRACE_MS / 86_400_000,
@@ -223,6 +224,13 @@ export function createApp(opts: { paywall: boolean }) {
   app.get("/llms.txt", (c) => {
     c.header("Cache-Control", "public, max-age=300");
     return c.text(llmsTxt(c.env, new URL(c.req.url).origin));
+  });
+
+  // OpenAPI discovery for agent wallets and x402 explorers (x402scan, AgentCash): routes, prices, schemas.
+  app.get("/openapi.json", (c) => {
+    c.header("Cache-Control", "public, max-age=300");
+    c.header("Access-Control-Allow-Origin", "*");
+    return c.json(openApi(c.env, new URL(c.req.url).origin));
   });
 
   // Public aggregates. Every payment is public on-chain anyway; wallets appear only as counts.

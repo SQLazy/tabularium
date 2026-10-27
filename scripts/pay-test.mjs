@@ -53,6 +53,22 @@ const llms = await fetch(`${BASE}/llms.txt`);
 const llmsText = await llms.text();
 check("llms.txt is free and shows the live prices", llms.status === 200 && menu.json.calls.every((c) => llmsText.includes(c.price)), String(llms.status));
 
+// Discovery for x402 explorers and agent wallets: free OpenAPI with the menu's prices, and every paid route answers
+// a bare probe (no body, no query, no payment) with 402, which is how x402scan registers a route.
+{
+  const oa = await fetch(`${BASE}/openapi.json`);
+  const doc = await oa.json().catch(() => null);
+  const priceOf = (path, method) => doc?.paths?.[path]?.[method]?.["x-payment-info"]?.price?.amount;
+  const same = menu.json.calls.every((c) => {
+    const [method, rest] = c.call.split(" ");
+    return priceOf(rest.split("?")[0], method.toLowerCase()) === c.price.slice(1);
+  });
+  check("openapi.json is free and prices every paid call as the menu does", oa.status === 200 && doc?.openapi === "3.1.0" && same, String(oa.status));
+  const probes = [["POST", "/write"], ["GET", "/read"], ["POST", "/renew"], ["GET", "/export"]];
+  const got = await Promise.all(probes.map(async ([method, path]) => (await fetch(`${BASE}${path}`, { method })).status));
+  check("bare probes of all four paid routes get 402", got.every((s) => s === 402), got.join(","));
+}
+
 let r = await j(await fetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
 check("unpaid write -> 402", r.status === 402, String(r.status));
 

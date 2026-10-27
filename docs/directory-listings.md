@@ -60,8 +60,12 @@ zero dependencies.
 
 | Directory | How | Status |
 |---|---|---|
-| MCP Registry | `mcp-publisher publish` | listed (0.3.1) |
+| MCP Registry | `mcp-publisher publish` | listed (0.3.3) |
+| npm | `npm publish` in mcp/ | 0.3.3 |
 | x402 Bazaar | automatic after settled CDP payments | listed (4 routes) |
+| x402scan (x402scan.com) | "Add API" at /resources/register: enter the origin; it reads /openapi.json and probes each route for a 402 | /openapi.json live (2026-10-27); owner to submit |
+| AgentCash (agent wallet discovery) | reads /openapi.json (Agentcash Discovery v1); check with `npx @agentcash/discovery tabularium.matt-3e0.workers.dev -v` | discoverable; validator run left to the owner |
+| Moltbook (agent social network) | agent registers by API; human claims via email + an X verification tweet; post in m/agentfinance (crypto allowed by its description) | owner to register + claim |
 | Glama (glama.ai/mcp/servers) | Indexes GitHub; claim the listing (glama.json in repo root names SQLazy) | to claim |
 | mcp.so | /submit, login | skipped: listing costs $39 (2026-10-26); revisit once /stats shows paying wallets |
 | Smithery (smithery.ai/new) | GitHub login; check it accepts local stdio (npx) servers | to check |

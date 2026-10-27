@@ -16,6 +16,7 @@ export function llmsTxt(env: Env, origin: string): string {
 Service: ${origin}
 Machine-readable menu (prices, policy, signing key): ${origin}/menu
 Public usage stats: ${origin}/stats
+OpenAPI (routes, schemas, x-payment-info prices): ${origin}/openapi.json
 Source: https://github.com/SQLazy/tabularium (service FSL-1.1-MIT; MCP client and verifier MIT)
 MCP server: npm "tabularium-mcp" (MCP Registry: io.github.SQLazy/tabularium)
 
@@ -41,7 +42,7 @@ MCP server: npm "tabularium-mcp" (MCP Registry: io.github.SQLazy/tabularium)
 - GET  /read   ${PRICES.read}   latest value for a key, with its chain entry
 - POST /renew  ${PRICES.renew}    extend by ${POLICY.TERM_MS / DAY} days from the later of now or expiry
 - GET  /export ${PRICES.export}    full signed history and current values, verifiable offline
-- Free: GET /menu, GET /head?wallet=0x..., GET /stats, GET /llms.txt
+- Free: GET /menu, GET /head?wallet=0x..., GET /stats, GET /llms.txt, GET /openapi.json
 
 Failed writes and reads (HTTP 4xx/5xx) are not charged. renew and export settle before running, after a free check
 that the workspace exists. One signed payment buys one call (a reused payment gets 409, not charged).

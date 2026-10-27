@@ -37,6 +37,14 @@ check("menu lists exactly four paid calls", r.json.calls.length === 4);
   const text = await lt.text();
   const pricesShown = r.json.calls.every((c) => text.includes(c.price));
   check("llms.txt is free plain text and shows every menu price", lt.status === 200 && /text\/plain/.test(lt.headers.get("content-type") ?? "") && pricesShown && text.includes(BASE), text.slice(0, 80));
+  const oa = await fetch(BASE + "/openapi.json");
+  const doc = await oa.json().catch(() => null);
+  const paidOps = Object.values(doc?.paths ?? {}).flatMap((p) => Object.values(p)).filter((op) => op["x-payment-info"]);
+  check(
+    "openapi.json is free, has four paid operations, each with security [] and a 402",
+    oa.status === 200 && paidOps.length === 4 && paidOps.every((op) => Array.isArray(op.security) && !op.security.length && op.responses["402"]) && doc.servers?.[0]?.url === BASE,
+    JSON.stringify(doc)?.slice(0, 120),
+  );
 }
 
 r = await call("POST", "/write", null, { key: "a", value: "x" });
