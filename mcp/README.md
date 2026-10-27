@@ -19,6 +19,16 @@ Your agent's EVM wallet pays each call in USDC over x402, and that wallet is the
 
 Failed calls (4xx/5xx) are never charged.
 
+### More Tabularium services
+
+Tabularium is a platform: the same wallet pays for every service it offers, and memory is the first. When the server
+starts, it reads the live menu and turns each paid call of every other service into its own tool, named
+`tabularium_<service>_<call>`, with the input fields and price the menu lists. A new service therefore shows up the
+next time your MCP client starts, without a new version of this package. These tools follow the same rules as the
+memory tools: the payee must be the menu's, the price at most the menu price (and never above $0.50), the session
+spend cap applies, and redirects are never followed. A call that settles after it runs is not retried after a failed
+payment, because it may already have run. Menu entries that do not fit these rules are skipped, not guessed at.
+
 ## Prompts
 
 Ready-made starting points your MCP client lists (in Claude Code, type `/` to see them):
@@ -51,6 +61,7 @@ is valid for at most 10 minutes whatever the seller asks.
 | `TABULARIUM_PUBKEY` | no | Pin the server's Ed25519 key (hex). Exports are verified against it, and a mismatch with the published key is reported. |
 | `TABULARIUM_MAX_SPEND_USD` | no | Spend cap for this server process, across all tools. Default `1`. |
 | `TABULARIUM_PAY_MAX_USD` | no | `tabularium_pay`: most one purchase may cost. Default `0.10`, ceiling `0.50`. |
+| `TABULARIUM_TEST` | no | Marks this process's requests to the service as test traffic, kept out of its public demand stats. For the service's own test runs. |
 | `TABULARIUM_PAY_NETWORKS` | no | `tabularium_pay`: networks it may pay on (comma-separated CAIP-2). Default: the service's own network, which for the public service is Base mainnet (`eip155:8453`): purchases spend real USDC, within `TABULARIUM_PAY_MAX_USD` and the spend cap. Set `eip155:84532` to keep purchases on testnet. |
 
 The public service runs on **Base mainnet**: the paying wallet needs real USDC on Base. It needs no ETH, because
@@ -80,6 +91,6 @@ Versions before 0.2.0 spoke x402 v1 and no longer work against the service.
 
     npm install
     cp ../verifier/verify.mjs verify.mjs   # also runs on prepack; a root test fails if the copy drifts
-    npm test                               # offline: payment guards (wrong asset/payee/price/network refused)
+    npm test                               # offline: payment guards (wrong asset/payee/price/network refused), service tools
     node smoke.mjs                         # 26 checks over stdio against the live service (PAYER_FILE picks the wallet)
     node smoke.mjs --npx tabularium-mcp@X  # same checks against a published version

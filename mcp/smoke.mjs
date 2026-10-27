@@ -17,7 +17,7 @@ const transport = new StdioClientTransport({
   ...(npxSpec
     ? { command: "npx", args: ["-y", npxSpec], cwd: tmpdir() } // empty-ish dir, so npx fetches from the registry
     : { command: process.execPath, args: [new URL("./server.mjs", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1")] }),
-  env: { ...process.env, TABULARIUM_URL: BASE, TABULARIUM_PRIVATE_KEY: w.payer.privateKey, TABULARIUM_MAX_SPEND_USD: "0.05" },
+  env: { ...process.env, TABULARIUM_URL: BASE, TABULARIUM_PRIVATE_KEY: w.payer.privateKey, TABULARIUM_MAX_SPEND_USD: "0.05", TABULARIUM_TEST: "1" },
 });
 console.log(npxSpec ? `testing published ${npxSpec}` : "testing local server.mjs");
 const client = new Client({ name: "tabularium-smoke", version: "0.0.0" });

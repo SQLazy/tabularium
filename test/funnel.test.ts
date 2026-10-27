@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { clientFamily, funnelKind } from "../src/core/funnel";
 import { SERVICES } from "../src/services";
+import { callInput } from "../src/core/service";
 import { platformRoutes } from "../src/core/platform";
 import type { Env } from "../src/env";
 
@@ -62,5 +63,21 @@ describe("services", () => {
   });
   it("upfront (settle-first) calls always carry a free precheck", () => {
     for (const s of SERVICES) for (const c of s.calls) if (c.upfront) expect(typeof c.precheck).toBe("function");
+  });
+});
+
+describe("callInput (published in /menu services for MCP clients)", () => {
+  const memory = SERVICES.find((s) => s.id === "memory")!;
+  const call = (name: string) => memory.calls.find((c) => c.name === name)!;
+  it("merges body fields with their required list", () => {
+    const { schema, query } = callInput(call("write"));
+    expect(Object.keys(schema.properties as object).sort()).toEqual(["idempotency_key", "key", "value"]);
+    expect(schema.required).toEqual(["key", "value"]);
+    expect(query).toEqual([]);
+  });
+  it("puts query parameters in the schema and names them", () => {
+    expect(callInput(call("read"))).toMatchObject({ query: ["key"], schema: { required: ["key"] } });
+    expect(callInput(call("export")).query).toEqual(["since"]);
+    expect(callInput(call("renew"))).toEqual({ schema: { type: "object", properties: {}, additionalProperties: false }, query: [] });
   });
 });

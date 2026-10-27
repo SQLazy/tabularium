@@ -10,6 +10,8 @@
 //   TABULARIUM_PAY_MAX_USD   tabularium_pay: most one purchase may cost (default 0.10; never above 0.50)
 //   TABULARIUM_PAY_NETWORKS  tabularium_pay: comma-separated networks it may pay on (default: the Tabularium
 //                            service's own network: Base mainnet for the public service, i.e. real USDC).
+//   TABULARIUM_TEST          optional; marks this process's requests as test traffic (kept out of the service's
+//                            demand stats). For our own smoke runs.
 import { createHash, randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -27,6 +29,9 @@ const RETRIES = 4;
 const PAY_MAX_USD = Math.min(Number(process.env.TABULARIUM_PAY_MAX_USD ?? "0.10"), Number(MAX_PER_CALL) / 1e6);
 const PAY_NETWORKS = process.env.TABULARIUM_PAY_NETWORKS?.split(",").map((n) => n.trim()).filter(Boolean) ?? null;
 
+const VERSION = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
+// Sent on every request to the Tabularium service (not to third parties paid through tabularium_pay).
+const HEADERS = { "user-agent": `tabularium-mcp/${VERSION}`, ...(process.env.TABULARIUM_TEST ? { "x-tabularium-test": "1" } : {}) };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const usd = (price) => Number(String(price).replace(/^\$/, ""));
 
@@ -34,15 +39,17 @@ const usd = (price) => Number(String(price).replace(/^\$/, ""));
 let menuCache = null;
 async function menu() {
   if (!menuCache) {
-    const res = await fetch(`${BASE}/menu`, { signal: AbortSignal.timeout(10_000) });
+    const res = await fetch(`${BASE}/menu`, { headers: HEADERS, signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`menu: HTTP ${res.status}`);
     menuCache = await res.json();
   }
   return menuCache;
 }
+// call: "POST /write" style. Memory's calls are in the legacy list (matched by prefix, e.g. "GET /read?key=");
+// every other service's calls are in `services`, matched exactly.
 async function priceOf(call) {
   const m = await menu();
-  const item = m.calls.find((c) => c.call.startsWith(call));
+  const item = m.calls.find((c) => c.call.startsWith(call)) ?? (m.services ?? []).flatMap((s) => s.calls ?? []).find((c) => c.call === call);
   if (!item) throw new Error(`menu has no ${call}`);
   return usd(item.price);
 }
@@ -74,7 +81,8 @@ async function payer() {
 
 // Same request on every try. Writes carry one idempotency_key across tries, so a retry after a
 // committed-but-unsettled write returns the original entry instead of appending twice.
-async function paid(call, url, init) {
+// retry: false for calls that may have run before a failed settlement and have no idempotency key.
+async function paid(call, url, init, { retry = true } = {}) {
   const price = await priceOf(call);
   if (spent + price > MAX_SPEND + 1e-9) {
     throw new Error(`spend cap reached: $${spent.toFixed(4)} spent, cap $${MAX_SPEND} (TABULARIUM_MAX_SPEND_USD)`);
@@ -82,8 +90,9 @@ async function paid(call, url, init) {
   const f = await payer();
   let res;
   const callCap = BigInt(Math.round(price * 1e6)); // never sign for more than the menu price of this call
-  for (let i = 0; i < RETRIES; i++) {
-    res = await f(url, init, { maxAtomic: callCap });
+  const req = { ...(init ?? {}), headers: { ...HEADERS, ...(init?.headers ?? {}) } };
+  for (let i = 0; i < (retry ? RETRIES : 1); i++) {
+    res = await f(url, req, { maxAtomic: callCap });
     if (res.status !== 402) break;
     if (i < RETRIES - 1) await sleep(3000 * (i + 1));
   }
@@ -140,7 +149,15 @@ const INSTRUCTIONS = [
   "Stored values are readable by the service operator: encrypt anything secret before writing.",
 ].join(" ");
 
-const server = new McpServer({ name: "tabularium", version: "0.3.3" }, { instructions: INSTRUCTIONS });
+// Services beyond memory, from the live menu. Each paid call becomes its own tool (see the end of this file), so a
+// service added to Tabularium reaches every install the next time it starts, with no new release of this package.
+const EXTRA_SERVICES = (startMenu?.services ?? []).filter((s) => s.id !== "memory" && /^[a-z][a-z0-9-]{0,30}$/.test(s.id ?? ""));
+const instructions = EXTRA_SERVICES.length
+  ? `${INSTRUCTIONS} The same wallet also pays for these Tabularium services, each a set of tabularium_<service>_<call> tools: ` +
+    EXTRA_SERVICES.map((s) => `${s.id} (${String(s.summary ?? "").slice(0, 160)})`).join("; ") + "."
+  : INSTRUCTIONS;
+
+const server = new McpServer({ name: "tabularium", version: VERSION }, { instructions });
 
 server.registerTool(
   "tabularium_menu",
@@ -264,7 +281,7 @@ server.registerTool(
       await payer();
       w = wallet;
     }
-    const res = await fetch(`${BASE}/head?wallet=${w}`);
+    const res = await fetch(`${BASE}/head?wallet=${w}`, { headers: HEADERS });
     const body = await res.json().catch(() => null);
     if (!res.ok) return fail(`head failed: HTTP ${res.status}`, body);
     return ok(body);
@@ -460,6 +477,50 @@ server.registerTool(
     });
   }),
 );
+
+// ---- every other service on the platform: one tool per paid call, built from the live menu -------
+// Same rules as the memory tools: the payee must be the menu's payTo, the price at most the menu price (and the
+// $0.50 ceiling), the session spend cap applies, and redirects are never followed. A call that settles after it
+// runs is not retried after a failed payment (it may already have run); one that settles first is safe to retry.
+const PATH_RE = /^\/[a-z][a-z0-9-]{0,30}\/[A-Za-z0-9._~\/-]{1,200}$/;
+function registerServiceTool(s, c) {
+  const [method, path] = String(c.call ?? "").split(" ");
+  if (!["GET", "POST"].includes(method) || !PATH_RE.test(path ?? "") || path.includes("..") || !path.startsWith(`/${s.id}/`) || !c.input?.schema) return null;
+  const name = `tabularium_${s.id}_${c.name}`.toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 64);
+  let schema;
+  try {
+    schema = z.fromJSONSchema(c.input.schema);
+  } catch {
+    return null; // a schema this client cannot express: skip the tool rather than guess
+  }
+  const query = new Set(Array.isArray(c.input.query) ? c.input.query : []);
+  const retry = method === "GET" || c.settles === "before running";
+  server.registerTool(
+    name,
+    {
+      title: `${s.name ?? s.id}: ${c.name}`.slice(0, 100),
+      description: `Paid (${c.price}). ${s.name ?? s.id}: ${c.summary ?? ""}. ${c.description ?? ""}`.replace(/\.\s*\./g, ".").slice(0, 1000),
+      inputSchema: schema,
+      annotations: { readOnlyHint: method === "GET", openWorldHint: true },
+    },
+    guard(async (args) => {
+      const qs = new URLSearchParams();
+      const body = {};
+      for (const [k, v] of Object.entries(args ?? {})) {
+        if (v === undefined) continue;
+        if (query.has(k)) qs.set(k, typeof v === "string" ? v : JSON.stringify(v));
+        else body[k] = v;
+      }
+      const url = `${BASE}${path}${qs.size ? `?${qs}` : ""}`;
+      const init = method === "POST" ? { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : undefined;
+      const r = await paid(c.call, url, init, { retry });
+      if (r.status >= 400) return fail(`${name} failed: HTTP ${r.status}`, { ...r.body, ...billing(r) });
+      return ok({ result: r.body, billing: billing(r) });
+    }),
+  );
+  return name;
+}
+for (const s of EXTRA_SERVICES) for (const c of s.calls ?? []) registerServiceTool(s, c);
 
 // ---- prompts: ready-made starting points a person can pick in their MCP client --------------------
 server.registerPrompt(

@@ -11,7 +11,7 @@ import { sha256Hex } from "../chain";
 import { CDP_FACILITATOR_URL, cdpAuthHeaders } from "../cdp";
 import { openApi } from "../openapi";
 import { CAIP2, PAYMENT_HEADER, isExcluded, payerOf, paymentNonce, walletStub, type C } from "./identity";
-import { micro, type PaidCall, type Service } from "./service";
+import { callInput, micro, type PaidCall, type Service } from "./service";
 import { TEST_HEADER, clientFamily, funnelKind } from "./funnel";
 
 // Higher-priced calls settle UPFRONT (before the handler): each is worth more than the gas it costs to make a
@@ -176,7 +176,15 @@ export function createPlatform(services: Service[], opts: { paywall: boolean }) 
         name: s.serviceName,
         summary: s.summary,
         tags: s.tags,
-        calls: s.calls.map((x) => ({ name: x.name, call: routeKey(x.method, x.path), price: x.price, settles: x.upfront ? "before running" : "after success", description: x.description })),
+        calls: s.calls.map((x) => ({
+          name: x.name,
+          call: routeKey(x.method, x.path),
+          price: x.price,
+          settles: x.upfront ? "before running" : "after success",
+          summary: (x.openapi as { summary?: string }).summary ?? "",
+          description: x.description,
+          input: callInput(x),
+        })),
       })),
     });
   app.get("/", menu);

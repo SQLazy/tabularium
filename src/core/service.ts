@@ -49,5 +49,31 @@ export interface Service {
   llms: (env: Env, origin: string) => string;
 }
 
+/**
+ * One JSON Schema for a call's inputs (query parameters and JSON body fields together), plus which names go in the
+ * query string. Published in /menu `services` so a client (tabularium-mcp) can build a tool per call.
+ */
+export function callInput(call: PaidCall): { schema: Record<string, unknown>; query: string[] } {
+  type Param = { name: string; in: string; required?: boolean; schema?: Record<string, unknown>; description?: string };
+  type Body = { properties?: Record<string, unknown>; required?: string[] };
+  const op = call.openapi as { parameters?: Param[]; requestBody?: { content?: Record<string, { schema?: Body }> } };
+  const properties: Record<string, unknown> = {};
+  const required: string[] = [];
+  const query: string[] = [];
+  for (const p of op.parameters ?? []) {
+    if (p.in !== "query") continue;
+    properties[p.name] = { ...(p.schema ?? {}), ...(p.description ? { description: p.description } : {}) };
+    query.push(p.name);
+    if (p.required) required.push(p.name);
+  }
+  const body = op.requestBody?.content?.["application/json"]?.schema;
+  for (const [k, v] of Object.entries(body?.properties ?? {})) {
+    if (k in properties) throw new Error(`${call.method} ${call.path}: "${k}" is both a query parameter and a body field`);
+    properties[k] = v;
+  }
+  required.push(...(body?.required ?? []));
+  return { schema: { type: "object", properties, ...(required.length ? { required } : {}), additionalProperties: false }, query };
+}
+
 export const usd = (price: string) => price.replace(/^\$/, "");
 export const micro = (price: string) => Math.round(Number(usd(price)) * 1e6);
