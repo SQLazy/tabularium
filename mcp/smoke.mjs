@@ -40,6 +40,13 @@ const { tools } = await client.listTools();
 const names = tools.map((t) => t.name).sort();
 check("lists 9 tools", names.join() === "tabularium_export,tabularium_head,tabularium_ledger,tabularium_menu,tabularium_pay,tabularium_read,tabularium_renew,tabularium_verify,tabularium_write", names.join());
 
+const instructions = client.getInstructions() ?? "";
+check("server instructions reach the client", /Tabularium/.test(instructions) && /real money/.test(instructions), instructions.slice(0, 80));
+const { prompts } = await client.listPrompts();
+check("ready-made prompts are listed", prompts.map((p) => p.name).sort().join() === "load_memory,spending_report", JSON.stringify(prompts.map((p) => p.name)));
+const lm = await client.getPrompt({ name: "load_memory", arguments: { index_key: "projects/index" } });
+check("load_memory prompt uses the given index key", /projects\/index/.test(lm.messages?.[0]?.content?.text ?? ""), JSON.stringify(lm).slice(0, 120));
+
 const liveMenu = await (await fetch(BASE + "/menu")).json();
 const writePrice = liveMenu.calls.find((c) => c.call === "POST /write").price;
 const writeTool = tools.find((t) => t.name === "tabularium_write");

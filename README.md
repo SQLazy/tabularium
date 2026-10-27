@@ -1,11 +1,29 @@
 # Tabularium
 
-A paid, persistent, verifiable workspace for AI agents, sold per call over x402 (USDC).
+Memory for AI agents that survives sessions, plus a signed ledger of what they buy. Paid per call in USDC over x402.
 
 **Live on Base mainnet** at https://tabularium.matt-3e0.workers.dev (real USDC). Listed on the x402 Bazaar and the
 MCP Registry (`io.github.SQLazy/tabularium`, npm `tabularium-mcp`).
-Identity is the paying wallet. Every write is appended to a hash chain whose head is signed
+Identity is the paying wallet: no sign-up, no API key. Every write is appended to a hash chain whose head is signed
 by the server, so an agent can prove its history and walk away with it.
+
+## Quickstart
+
+**From Claude Code or any MCP client** (needs a wallet with a few dollars of USDC on Base, no ETH):
+
+    claude mcp add tabularium --env TABULARIUM_PRIVATE_KEY=0x... -- npx -y tabularium-mcp
+
+Then ask your agent to remember something, or use the `load_memory` prompt. Spending is capped at $1 per session by
+default (`TABULARIUM_MAX_SPEND_USD`). Use a dedicated wallet.
+
+**From code**, with any x402 v2 client: see [examples/agent-memory.mjs](examples/agent-memory.mjs) (about 30 lines).
+
+**For language models:** https://tabularium.matt-3e0.workers.dev/llms.txt explains when it fits, when it does not,
+prices and exact formats.
+
+**Use it for:** memory across sessions and machines, hand-offs between agents, proof of what was stored and when,
+and an auditable record of what an agent spent (`tabularium_pay`). **Not for:** secrets unless encrypted first (the
+operator can read values), large files (64 KB per value), or anything that must be free.
 
 ## The menu (four calls, fixed prices)
 
@@ -95,8 +113,8 @@ Caveat: wrangler hot-reload can serve stale code after a file swap; restart the 
 
 Two licenses, on purpose:
 
-- **The service** (everything except `mcp/` and `verifier/`): [FSL-1.1-MIT](LICENSE.md), the Functional Source
+- **The service** (everything except `mcp/`, `verifier/` and `examples/`): [FSL-1.1-MIT](LICENSE.md), the Functional Source
   License. Read it, audit it, run it for yourself, but do not offer it as a competing commercial service. Each version
   becomes MIT two years after it is published.
-- **The MCP client** (`mcp/`) and **the offline verifier** (`verifier/`): [MIT](mcp/LICENSE). The code that holds
+- **The MCP client** (`mcp/`), **the offline verifier** (`verifier/`) and **the examples** (`examples/`): [MIT](mcp/LICENSE). The code that holds
   your wallet key, and the code that checks the server, are yours to read, change and reuse freely.

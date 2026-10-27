@@ -1,6 +1,6 @@
 {
   "name": "tabularium-mcp",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "MCP server for Tabularium: persistent, hash-chained agent memory plus a signed spending ledger. Pay any x402 service and keep a provable receipt.",
   "mcpName": "io.github.SQLazy/tabularium",
   "type": "module",

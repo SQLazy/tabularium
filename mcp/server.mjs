@@ -131,14 +131,24 @@ const priced = (call) => {
   return p ? `Paid (${p}).` : "Paid (price: see tabularium_menu).";
 };
 
-const server = new McpServer({ name: "tabularium", version: "0.3.2" });
+const INSTRUCTIONS = [
+  "Tabularium is persistent, provable memory for this agent, paid per call in USDC from the configured wallet (the wallet is the account).",
+  "Free: tabularium_menu (prices), tabularium_head (exists? expiry), tabularium_verify (check an export). Every other tool costs real money,",
+  "so prefer a few small structured writes over many tiny ones, and read only what is needed.",
+  "A simple pattern: keep an 'index' key listing the keys worth loading; read it at the start of a session; write decisions as they happen.",
+  "To buy from another x402 service with a record of it, use tabularium_pay with a clear reason; tabularium_ledger summarizes spending.",
+  "Stored values are readable by the service operator: encrypt anything secret before writing.",
+].join(" ");
+
+const server = new McpServer({ name: "tabularium", version: "0.3.3" }, { instructions: INSTRUCTIONS });
 
 server.registerTool(
   "tabularium_menu",
   {
     title: "Tabularium menu",
     description:
-      "Free. Shows what Tabularium is, the four paid calls and their USDC prices, retention policy, network, and the public signing key. Call this first.",
+      "Free. Use to check what Tabularium costs and how it works before the first paid call, or to show someone the prices. " +
+      "Returns the paid calls and their USDC prices, retention policy, network, the public signing key, and this session's spend so far.",
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
   guard(async () => ok({ ...(await menu()), mcp: { serviceUrl: BASE, payerConfigured: !!PRIVATE_KEY, spendCapUsd: MAX_SPEND, sessionSpentUsd: spent } })),
@@ -149,9 +159,11 @@ server.registerTool(
   {
     title: "Write a value",
     description:
-      priced("POST /write") + " Appends a value under a key in your persistent workspace (your wallet is the account). The first write opens a 30-day workspace. " +
-      "Values are UTF-8 strings up to 64KB; store JSON as a string. Every write is hash-chained and the new head is signed by the server. " +
-      "Retries on failed settlement reuse one idempotency key, so a retry never writes twice.",
+      priced("POST /write") +
+      " Use to remember something beyond this session: decisions, state, results, notes, or a hand-off for another agent paying " +
+      "from the same wallet. Stores a UTF-8 value (up to 64KB; JSON as a string) under a key in the wallet's workspace. Every write " +
+      "is hash-chained and the head is signed, so what was stored, and when, can be proven later. The first write opens a 30-day " +
+      "workspace. Retries never write twice. Not for secrets unless encrypted first: the operator can read stored values.",
     inputSchema: {
       key: z.string().regex(/^[A-Za-z0-9._:\/-]{1,128}$/).describe("1-128 chars of A-Z a-z 0-9 . _ : / -"),
       value: z.string().describe("The value to store (UTF-8, max 64KB)"),
@@ -175,7 +187,10 @@ server.registerTool(
   "tabularium_read",
   {
     title: "Read a value",
-    description: priced("GET /read") + " Returns the latest value for a key in your workspace, with its chain entry. 404 (not charged) if the key was never written.",
+    description:
+      priced("GET /read") +
+      " Use to recall what was stored earlier, by this session, a previous one, or another agent paying from the same wallet. " +
+      "Returns the latest value for a key with its chain entry. A key that was never written gives 404 and is not charged.",
     inputSchema: { key: z.string().regex(/^[A-Za-z0-9._:\/-]{1,128}$/) },
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
@@ -191,8 +206,10 @@ server.registerTool(
   {
     title: "Renew the workspace",
     description:
-      priced("POST /renew") + " Extends your workspace by 30 days from the later of now or the current expiry, so renewing early wastes nothing. " +
-      "After expiry there is a 90-day grace period (read/export/renew work, writes do not), then the data is deleted.",
+      priced("POST /renew") +
+      " Use when the memory should outlast its term: adds 30 days from the later of now or the current expiry, so renewing early " +
+      "wastes nothing (tabularium_head shows the expiry for free). After expiry there is a 90-day grace period (read, export and " +
+      "renew work, writes do not), then the data is deleted. Charged before it runs; a missing workspace is refused free.",
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
   guard(async () => {
@@ -207,8 +224,10 @@ server.registerTool(
   {
     title: "Export and verify history",
     description:
-      priced("GET /export") + " Downloads your full history (or entries after `since`) with current values and a signed head, then verifies it offline: " +
-      "hash chain, values against their hashes, and the server's Ed25519 signature. Pass save_to to write the export to a file and get a summary back.",
+      priced("GET /export") +
+      " Use to back up the memory, take it elsewhere, or hand proof to someone (a principal, an auditor, another agent). Downloads " +
+      "the full history (or entries after `since`) with current values and a signed head, then verifies it offline: hash chain, " +
+      "values against their hashes, and the server's Ed25519 signature. Pass save_to to write the file and get a summary back.",
     inputSchema: {
       since: z.number().int().min(0).optional().describe("Only entries with seq > since (incremental export)"),
       save_to: z.string().optional().describe("Optional local file path to save the export JSON to"),
@@ -234,7 +253,9 @@ server.registerTool(
   "tabularium_head",
   {
     title: "Public signed head",
-    description: "Free. Returns the signed head (seq + hash, no values), state and expiry for a wallet's workspace. Defaults to your own wallet.",
+    description:
+      "Free. Use to check whether a workspace exists and when it expires, or to give someone a signed fingerprint of the history " +
+      "(seq + hash, no values) that a later export must match. Defaults to your own wallet.",
     inputSchema: { wallet: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional() },
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
@@ -254,7 +275,9 @@ server.registerTool(
   "tabularium_verify",
   {
     title: "Verify a saved export",
-    description: "Free and local. Verifies a previously saved export file without trusting the server. Uses the pinned or published signing key unless one is given.",
+    description:
+      "Free and local. Use to check an export file, yours or one someone handed you, without trusting the server: chain, values " +
+      "and signature. Uses the pinned or published signing key unless one is given.",
     inputSchema: {
       path: z.string().describe("Path to an export JSON file"),
       public_key_hex: z.string().regex(/^[0-9a-fA-F]{64}$/).optional(),
@@ -287,7 +310,8 @@ server.registerTool(
   {
     title: "Pay an x402 service and keep a signed receipt",
     description:
-      "Pays any x402 v2 endpoint in USDC from your wallet, then writes a receipt (what, why, how much, to whom, transaction hash, " +
+      "Use instead of a plain request when buying from an x402 service and the purchase should be accountable later. Pays the " +
+      "x402 v2 endpoint in USDC from your wallet, then writes a receipt (what, why, how much, to whom, transaction hash, " +
       "response hash) into your Tabularium ledger, where it is hash-chained and signed, so the spending can be proven later. " +
       `Costs the endpoint's own price plus one write (${priced("POST /write").replace(/^Paid \(|\)\.$/g, "")}). ` +
       `Pays only USDC via EIP-3009, only on allowed networks, and at most max_usd per purchase (default and ceiling $${PAY_MAX_USD}). ` +
@@ -391,7 +415,8 @@ server.registerTool(
     title: "What have I spent?",
     description:
       priced("GET /export") +
-      " Exports and verifies your workspace, then totals the receipts tabularium_pay wrote: spend overall, by service and by day, " +
+      " Use to answer what was spent, on what, and why. Exports and verifies the workspace, then totals the receipts " +
+      "tabularium_pay wrote: spend overall, by service and by day, " +
       "with the latest receipts. Optional day_prefix narrows it (e.g. 2026-10 or 2026-10-26).",
     inputSchema: { day_prefix: z.string().regex(/^\d{4}(-\d{2}){0,2}$/).optional() },
     annotations: { readOnlyHint: true, openWorldHint: true },
@@ -433,6 +458,53 @@ server.registerTool(
       latest: receipts.slice(-20).reverse(),
       billing: billing(r),
     });
+  }),
+);
+
+// ---- prompts: ready-made starting points a person can pick in their MCP client --------------------
+server.registerPrompt(
+  "load_memory",
+  {
+    title: "Load my Tabularium memory",
+    description: "Start a session from what was stored before: read the index key, then the entries it lists.",
+    argsSchema: { index_key: z.string().regex(/^[A-Za-z0-9._:\/-]{1,128}$/).optional().describe("Key holding the index (default: index)") },
+  },
+  ({ index_key }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text:
+            `Load my memory from Tabularium. Read the key "${index_key ?? "index"}" with tabularium_read. If it lists other keys, read the ones ` +
+            "relevant to what we are doing now (each read costs a little, so skip the rest). If the index does not exist yet, say so and " +
+            "offer to create one. Then summarise what you know.",
+        },
+      },
+    ],
+  }),
+);
+
+server.registerPrompt(
+  "spending_report",
+  {
+    title: "What has my agent spent?",
+    description: "Summarise purchases recorded by tabularium_pay: totals by service and day, and the biggest items with their reasons.",
+    argsSchema: { day_prefix: z.string().regex(/^\d{4}(-\d{2}){0,2}$/).optional().describe("Limit to a period, e.g. 2026-10") },
+  },
+  ({ day_prefix }) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text:
+            `Run tabularium_ledger${day_prefix ? ` with day_prefix "${day_prefix}"` : ""} and give me a short spending report: total, ` +
+            "top services, spend by day, and the largest purchases with their stated reasons and transaction hashes. Say whether the " +
+            "export verified.",
+        },
+      },
+    ],
   }),
 );
 

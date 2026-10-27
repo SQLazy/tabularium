@@ -66,3 +66,10 @@ zero dependencies.
 | mcp.so | /submit, login | skipped: listing costs $39 (2026-10-26); revisit once /stats shows paying wallets |
 | Smithery (smithery.ai/new) | GitHub login; check it accepts local stdio (npx) servers | to check |
 | PulseMCP | reportedly syncs from the MCP Registry | check in a few days |
+| awesome-mcp-servers (punkpeye) | PR adding one line to `README.md`, section Knowledge & Memory; title ends with 🤖🤖🤖 (agent-prepared) | wait for the Glama listing (entries carry its badge) |
+| x402.org ecosystem | page now 404; no documented process | ask in the x402 Discord |
+
+## awesome-mcp-servers line (Knowledge & Memory)
+
+    - [SQLazy/tabularium](https://github.com/SQLazy/tabularium) [![SQLazy/tabularium MCP server](https://glama.ai/mcp/servers/SQLazy/tabularium/badges/score.svg)](https://glama.ai/mcp/servers/SQLazy/tabularium) 📇 ☁️ 🍎 🪟 🐧 - Pay-per-call agent memory over x402 (USDC on Base) with a hash-chained, server-signed history that verifies offline, plus a signed ledger of every x402 purchase the agent makes.
+
