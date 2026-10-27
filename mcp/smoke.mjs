@@ -103,7 +103,16 @@ r = await call("tabularium_menu");
 check("refused purchase charged nothing", r.json?.mcp?.sessionSpentUsd === spentBefore, JSON.stringify(r.json?.mcp));
 
 const purchaseId = `smoke-${Date.now()}`;
-r = await call("tabularium_pay", { url: `${BASE}/read?key=${key}`, reason: "smoke: buy one read", max_usd: 0.005, purchase_id: purchaseId });
+// What an agent should do when a payment does not settle: call again with the same purchase_id. That resends the
+// same signed authorization, so it can settle at most once (the shared testnet facilitator fails now and then).
+let retries = 0;
+for (;;) {
+  r = await call("tabularium_pay", { url: `${BASE}/read?key=${key}`, reason: "smoke: buy one read", max_usd: 0.005, purchase_id: purchaseId });
+  if (!r.isError || !/not settled|not confirmed/.test(r.text) || retries >= 3) break;
+  retries++;
+  console.log(`      (purchase not settled; retry ${retries} with the same purchase_id)`);
+  await new Promise((res) => setTimeout(res, 5000 * retries));
+}
 const bought = r.json;
 check(
   "pay buys from an x402 endpoint and returns its response",
