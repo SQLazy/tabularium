@@ -60,8 +60,8 @@ zero dependencies.
 
 | Directory | How | Status |
 |---|---|---|
-| MCP Registry | `mcp-publisher publish` | listed (0.3.3) |
-| npm | `npm publish` in mcp/ | 0.3.3 |
+| MCP Registry | `mcp-publisher publish` | listed (0.4.0) |
+| npm | `npm publish` in mcp/ | 0.4.0 |
 | x402 Bazaar | automatic after settled CDP payments | listed (4 routes) |
 | x402scan (x402scan.com) | "Add API" at /resources/register: enter the origin; it reads /openapi.json and probes each route for a 402 | /openapi.json live (2026-10-27); owner to submit |
 | AgentCash (agent wallet discovery) | reads /openapi.json (Agentcash Discovery v1); check with `npx @agentcash/discovery tabularium.matt-3e0.workers.dev -v` | discoverable; validator run left to the owner |
