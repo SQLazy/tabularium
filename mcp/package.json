@@ -1,14 +1,42 @@
 {
   "name": "tabularium-mcp",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "MCP server for Tabularium: persistent, hash-chained agent memory plus a signed spending ledger. Pay any x402 service and keep a provable receipt.",
   "mcpName": "io.github.SQLazy/tabularium",
   "type": "module",
-  "bin": { "tabularium-mcp": "server.mjs" },
-  "files": ["server.mjs", "x402.mjs", "ledger.mjs", "verify.mjs", "README.md", "LICENSE"],
-  "engines": { "node": ">=20" },
-  "keywords": ["mcp", "model-context-protocol", "x402", "agent-memory", "ai-agents", "usdc", "base", "verifiable", "storage", "ledger", "receipts", "agent-payments"],
-  "repository": { "type": "git", "url": "git+https://github.com/SQLazy/tabularium.git", "directory": "mcp" },
+  "bin": {
+    "tabularium-mcp": "server.mjs"
+  },
+  "files": [
+    "server.mjs",
+    "x402.mjs",
+    "ledger.mjs",
+    "verify.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "x402",
+    "agent-memory",
+    "ai-agents",
+    "usdc",
+    "base",
+    "verifiable",
+    "storage",
+    "ledger",
+    "receipts",
+    "agent-payments"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SQLazy/tabularium.git",
+    "directory": "mcp"
+  },
   "homepage": "https://github.com/SQLazy/tabularium/tree/main/mcp#readme",
   "bugs": "https://github.com/SQLazy/tabularium/issues",
   "scripts": {
