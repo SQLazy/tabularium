@@ -44,10 +44,16 @@ const writeInit = (key, value, idem) => ({
   body: JSON.stringify({ key, value, idempotency_key: idem }),
 });
 
+const SCRIPT = "pay-test";
+// In GitHub Actions, each failed check also becomes an annotation (public, unlike the job log).
+const annotate = (name, extra) => process.env.GITHUB_ACTIONS && console.log(`::error title=${SCRIPT}::${name} ${String(extra).replace(/[\r\n%]/g, " ").slice(0, 400)}`);
 let failed = 0;
 const check = (name, ok, extra = "") => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  " + extra}`);
-  if (!ok) failed++;
+  if (!ok) {
+    failed++;
+    annotate(name, extra);
+  }
 };
 const j = async (res) => ({ status: res.status, json: await res.json().catch(() => null), pay: res.headers.get("payment-response") });
 

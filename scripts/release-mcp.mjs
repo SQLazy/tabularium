@@ -3,7 +3,7 @@
 // package from a clean install.
 //   node scripts/release-mcp.mjs 0.5.1          bump, test, commit, tag mcp-v0.5.1, push
 //   node scripts/release-mcp.mjs 0.5.1 --dry    bump and test only; nothing committed or pushed
-import { execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const [version, flag] = process.argv.slice(2);
@@ -13,7 +13,8 @@ if (!/^\d+\.\d+\.\d+$/.test(version ?? "")) {
   process.exit(2);
 }
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
+// Fixed command strings only (no user input reaches a shell).
+const run = (command, cwd) => execSync(command, { cwd, stdio: "inherit" });
 
 if (git("rev-parse", "--abbrev-ref", "HEAD") !== "main") throw new Error("release from main only");
 if (git("status", "--porcelain")) throw new Error("working tree not clean: commit or stash first");
@@ -36,8 +37,8 @@ for (const p of srv.packages ?? []) if (p.identifier === pkg.name) p.version = v
 writeFileSync(srvPath, JSON.stringify(srv, null, 2) + "\n");
 console.log(`set ${pkg.name} and server.json to ${version}`);
 
-run("npm", ["test"], "mcp");
-run("npx", ["vitest", "run"], ".");
+run("npm test", "mcp");
+run("npx vitest run", ".");
 if (dry) {
   console.log("dry run: files bumped and tests passed; nothing committed. Revert with: git checkout mcp/package.json mcp/server.json");
   process.exit(0);

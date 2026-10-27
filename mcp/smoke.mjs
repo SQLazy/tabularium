@@ -25,10 +25,16 @@ console.log(npxSpec ? `testing published ${npxSpec}` : "testing local server.mjs
 const client = new Client({ name: "tabularium-smoke", version: "0.0.0" });
 await client.connect(transport);
 
+const SCRIPT = "smoke";
+// In GitHub Actions, each failed check also becomes an annotation (public, unlike the job log).
+const annotate = (name, extra) => process.env.GITHUB_ACTIONS && console.log(`::error title=${SCRIPT}::${name} ${String(extra).replace(/[\r\n%]/g, " ").slice(0, 400)}`);
 let failed = 0;
 const check = (name, cond, extra = "") => {
   console.log(`${cond ? "PASS" : "FAIL"}  ${name}${cond ? "" : "  " + extra}`);
-  if (!cond) failed++;
+  if (!cond) {
+    failed++;
+    annotate(name, extra);
+  }
 };
 const call = async (name, args = {}) => {
   const r = await client.callTool({ name, arguments: args });

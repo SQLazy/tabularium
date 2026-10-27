@@ -5,10 +5,16 @@ const BASE = (process.argv[2] ?? "https://tabularium.matt-3e0.workers.dev").repl
 const H = { "x-tabularium-test": "1", "user-agent": "tabularium-live-check" };
 const get = (path, init = {}) => fetch(BASE + path, { ...init, headers: { ...H, ...(init.headers ?? {}) }, signal: AbortSignal.timeout(20_000) });
 
+const SCRIPT = "live-check";
+// In GitHub Actions, each failed check also becomes an annotation (public, unlike the job log).
+const annotate = (name, extra) => process.env.GITHUB_ACTIONS && console.log(`::error title=${SCRIPT}::${name} ${String(extra).replace(/[\r\n%]/g, " ").slice(0, 400)}`);
 let failed = 0;
 const check = (name, ok, extra = "") => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  " + extra}`);
-  if (!ok) failed++;
+  if (!ok) {
+    failed++;
+    annotate(name, extra);
+  }
 };
 
 const menuRes = await get("/menu");

@@ -22,10 +22,16 @@ const call = async (method, path, wallet, body) => {
   return { status: res.status, json: await res.json().catch(() => null) };
 };
 
+const SCRIPT = "e2e";
+// In GitHub Actions, each failed check also becomes an annotation (public, unlike the job log).
+const annotate = (name, extra) => process.env.GITHUB_ACTIONS && console.log(`::error title=${SCRIPT}::${name} ${String(extra).replace(/[\r\n%]/g, " ").slice(0, 400)}`);
 let failed = 0;
 const check = (name, cond, extra = "") => {
   console.log(`${cond ? "PASS" : "FAIL"}  ${name}${cond ? "" : "  " + extra}`);
-  if (!cond) failed++;
+  if (!cond) {
+    failed++;
+    annotate(name, extra);
+  }
 };
 
 // --- menu & identity
@@ -237,10 +243,25 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
 
 // --- snapshot service (fetches the real internet: example.com and httpbin.org)
 {
-  const snap = (wallet, body) => call("POST", "/snapshot/fetch", wallet, body);
+  // These checks fetch real sites (example.com, httpbin.org). When a site itself is down (our fetcher reports 502, or
+  // 424 with a 5xx from the site), retry; if it stays down, SKIP that check instead of failing our build on it.
+  const tally = { ok: 0, refused: 0 };
+  const siteDown = (x) => x.status === 502 || (x.status === 424 && (x.json?.upstreamStatus ?? 0) >= 500) || (x.status === 424 && x.json?.upstreamStatus === 429);
+  const snap = async (wallet, body, expectStatus) => {
+    let x;
+    for (let i = 0; i < 3; i++) {
+      x = await call("POST", "/snapshot/fetch", wallet, body);
+      x.status === 200 ? tally.ok++ : tally.refused++;
+      if (!siteDown(x) || x.status === expectStatus) return x;
+      await new Promise((r) => setTimeout(r, 2000 * (i + 1)));
+    }
+    x.skip = true;
+    return x;
+  };
+  const checkSite = (name, x, cond, extra) => (x.skip ? console.log(`SKIP  ${name}  (the outside site was unavailable: ${x.status})`) : check(name, cond, extra));
   const S = rand();
   const before = await stats();
-  r = await snap(S, { url: "https://example.com/" });
+  r = await snap(S, { url: "https://example.com/" }, 200);
   check("snapshot returns the page text and title", r.status === 200 && /documentation examples/.test(r.json?.text ?? "") && r.json?.snapshot?.title === "Example Domain", JSON.stringify(r.json)?.slice(0, 200));
   check("snapshot record names the payer, the final URL and the raw body hash", r.json?.snapshot?.wallet === S && r.json?.snapshot?.finalUrl === "https://example.com/" && /^[0-9a-f]{64}$/.test(r.json?.snapshot?.sha256 ?? ""));
   const sv = await verifySnapshot(r.json, pub);
@@ -260,11 +281,11 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
     ["an image", { url: "https://www.google.com/favicon.ico" }, 415, "unsupported_content_type"],
   ];
   for (const [what, body, status, error] of refused) {
-    const x = await snap(S, body);
-    check(`snapshot refuses ${what} (${status} ${error}, not charged)`, x.status === status && x.json?.error === error, JSON.stringify({ status: x.status, body: x.json }).slice(0, 160));
+    const x = await snap(S, body, status);
+    checkSite(`snapshot refuses ${what} (${status} ${error}, not charged)`, x, x.status === status && x.json?.error === error, JSON.stringify({ status: x.status, body: x.json }).slice(0, 160));
   }
-  r = await snap(S, { url: "https://httpbin.org/redirect/1" });
-  check("snapshot follows a redirect and signs the final URL", r.status === 200 && r.json?.snapshot?.finalUrl === "https://httpbin.org/get" && (await verifySnapshot(r.json, pub)).ok, JSON.stringify(r.json?.snapshot ?? r.json)?.slice(0, 160));
+  r = await snap(S, { url: "https://httpbin.org/redirect/1" }, 200);
+  checkSite("snapshot follows a redirect and signs the final URL", r, r.status === 200 && r.json?.snapshot?.finalUrl === "https://httpbin.org/get" && (await verifySnapshot(r.json, pub)).ok, JSON.stringify(r.json?.snapshot ?? r.json)?.slice(0, 160));
   const mw = await call("POST", "/write", S, { key: "note", value: "same wallet, second service" });
   await settle();
   const after = await stats();
@@ -272,8 +293,8 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
   const sa = after.services.snapshot;
   check(
     "snapshot stats count only the successful fetches, and failed ones as rejected",
-    sa.paidCalls - sb.paidCalls === 2 && sa.funnel.paid - sb.funnel.paid === 2 && sa.funnel.rejected - sb.funnel.rejected === refused.length && Math.abs(sa.revenueUsd - sb.revenueUsd - 0.01) < 1e-9,
-    JSON.stringify({ calls: sa.paidCalls - sb.paidCalls, paid: sa.funnel.paid - sb.funnel.paid, rejected: sa.funnel.rejected - sb.funnel.rejected }),
+    sa.paidCalls - sb.paidCalls === tally.ok && sa.funnel.paid - sb.funnel.paid === tally.ok && sa.funnel.rejected - sb.funnel.rejected === tally.refused && Math.abs(sa.revenueUsd - sb.revenueUsd - 0.005 * tally.ok) < 1e-9,
+    JSON.stringify({ tally, calls: sa.paidCalls - sb.paidCalls, paid: sa.funnel.paid - sb.funnel.paid, rejected: sa.funnel.rejected - sb.funnel.rejected }),
   );
   check("a wallet that paid for snapshot and memory counts once as cross-service", mw.status === 200 && after.crossServiceWallets - before.crossServiceWallets === 1, JSON.stringify({ before: before.crossServiceWallets, after: after.crossServiceWallets }));
 }
