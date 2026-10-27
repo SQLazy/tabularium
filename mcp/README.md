@@ -19,6 +19,18 @@ Your agent's EVM wallet pays each call in USDC over x402, and that wallet is the
 
 Failed calls (4xx/5xx) are never charged.
 
+## Prompts
+
+Ready-made starting points your MCP client lists (in Claude Code, type `/` to see them):
+
+| Prompt | What |
+|---|---|
+| `load_memory` | Start a session from what was stored before: read an index key (default `index`), then the entries it lists. |
+| `spending_report` | What has my agent spent? Totals by service and day, and the largest purchases with their reasons. |
+
+The server also tells the model, when it connects, which tools are free and which cost money, plus a simple memory
+pattern: keep an `index` key, read it at the start, write decisions as they happen.
+
 ### The spending ledger
 
 `tabularium_pay` answers the question every operator asks: *what did my agent buy, from whom, for how much, and why?*
@@ -69,5 +81,5 @@ Versions before 0.2.0 spoke x402 v1 and no longer work against the service.
     npm install
     cp ../verifier/verify.mjs verify.mjs   # also runs on prepack; a root test fails if the copy drifts
     npm test                               # offline: payment guards (wrong asset/payee/price/network refused)
-    node smoke.mjs                         # 23 checks over stdio against the live service (PAYER_FILE picks the wallet)
+    node smoke.mjs                         # 26 checks over stdio against the live service (PAYER_FILE picks the wallet)
     node smoke.mjs --npx tabularium-mcp@X  # same checks against a published version
