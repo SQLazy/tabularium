@@ -1,0 +1,56 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.SQLazy/tabularium",
+  "title": "Tabularium",
+  "description": "Agent memory and a signed spending ledger: pay any x402 API, keep a provable receipt.",
+  "repository": {
+    "url": "https://github.com/SQLazy/tabularium",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "websiteUrl": "https://github.com/SQLazy/tabularium/tree/main/mcp#readme",
+  "version": "0.3.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "tabularium-mcp",
+      "version": "0.3.2",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "TABULARIUM_PRIVATE_KEY",
+          "description": "0x-prefixed EVM private key of the wallet that pays (use a dedicated wallet with a small USDC balance)",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "TABULARIUM_MAX_SPEND_USD",
+          "description": "Spend cap for this server process, in USD",
+          "default": "1",
+          "isRequired": false
+        },
+        {
+          "name": "TABULARIUM_URL",
+          "description": "Service base URL (defaults to the public deployment)",
+          "isRequired": false
+        },
+        {
+          "name": "TABULARIUM_PAY_MAX_USD",
+          "description": "tabularium_pay: most one purchase may cost, in USD (ceiling 0.50)",
+          "default": "0.10",
+          "isRequired": false
+        },
+        {
+          "name": "TABULARIUM_PAY_NETWORKS",
+          "description": "tabularium_pay: comma-separated networks it may pay on; default is the service's own network. eip155:8453 is mainnet (real money).",
+          "isRequired": false
+        },
+        {
+          "name": "TABULARIUM_PUBKEY",
+          "description": "Optional pinned Ed25519 signing key (hex) that exports must verify against",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

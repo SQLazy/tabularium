@@ -1,0 +1,23 @@
+{
+  // LOCAL TESTING ONLY: no paywall. Use with: npx wrangler dev -c wrangler.dev.jsonc
+  "name": "tabularium-dev",
+  "main": "src/dev-nopay.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [
+      { "name": "WORKSPACE", "class_name": "Workspace" },
+      { "name": "STATS", "class_name": "Stats" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Workspace"] },
+    { "tag": "v2", "new_sqlite_classes": ["Stats"] }
+  ],
+  "vars": {
+    "NETWORK": "base-sepolia",
+    "PAY_TO": "0x0000000000000000000000000000000000000000",
+    "EXCLUDE_WALLETS": "0x00000000000000000000000000000000000000E1"
+    // SIGNING_KEY_PKCS8 and SIGNING_PUBKEY_HEX come from .dev.vars (npm run keygen -- --dev)
+  }
+}

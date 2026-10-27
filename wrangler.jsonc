@@ -1,0 +1,35 @@
+{
+  "name": "tabularium",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  // @x402/hono uses Buffer when settling.
+  "compatibility_flags": ["nodejs_compat"],
+  // Only the workers.dev production URL serves traffic; no per-version preview URLs.
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      { "name": "WORKSPACE", "class_name": "Workspace" },
+      { "name": "STATS", "class_name": "Stats" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Workspace"] },
+    { "tag": "v2", "new_sqlite_classes": ["Stats"] }
+  ],
+  "vars": {
+    // MAINNET since 2026-10-26 (real USDC on Base). Local `wrangler dev` runs stay on base-sepolia via .dev.vars.
+    "NETWORK": "base",
+    // Coinbase CDP facilitator; auth via the CDP_API_KEY_ID / CDP_API_KEY_SECRET secrets (src/cdp.ts).
+    // It rejects payments below its (undocumented) minimum: $0.0005 failed with amount_too_low, $0.001 works.
+    // Free testnet fallback: "https://x402.org/facilitator".
+    "FACILITATOR_URL": "https://api.cdp.coinbase.com/platform/v2/x402",
+    // Our own receiving wallet (recovery phrase held by the owner, never in this repo).
+    "PAY_TO": "0x951BD91AD61d2D867F21b54D2f717D8FFF4aD28a",
+    // Our own test payers, left out of /stats.
+    "EXCLUDE_WALLETS": "0xa668c8EE5F9cCe6fF64b2A8938Da5744FB0edE63,0x9511e21a4D5D8ba7Cc85cfFB65Df3fD682b90D92",
+    // Output of `npm run keygen`. Public.
+    // Rotated 2026-10-26. Old keys are listed in src/policy.ts RETIRED_SIGNING_KEYS.
+    "SIGNING_PUBKEY_HEX": "111f5e97ab8eb6feded9e98c72983d492b912c3ca00304cb616fe01cc233b968"
+  }
+  // Secret, set with: npx wrangler secret put SIGNING_KEY_PKCS8
+}

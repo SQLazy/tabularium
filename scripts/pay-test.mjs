@@ -1,0 +1,134 @@
+// Pays the LIVE endpoint with a throwaway payer wallet, then verifies the export offline.
+//   node scripts/pay-test.mjs https://tabularium.<you>.workers.dev
+// Payer: PAYER_FILE (default .testnet-wallets.json; mainnet: .secrets/mainnet-payer.json). The network is whatever the
+// service's menu says, so the same script tests testnet and mainnet. On mainnet one run costs about $0.28 of real USDC.
+import { readFileSync } from "node:fs";
+import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
+import { ExactEvmScheme } from "@x402/evm/exact/client";
+import { privateKeyToAccount } from "viem/accounts";
+import { verifyExport } from "../verifier/verify.mjs";
+
+const BASE = (process.argv[2] ?? "").replace(/\/$/, "");
+if (!BASE) throw new Error("usage: node scripts/pay-test.mjs <baseUrl>");
+const w = JSON.parse(readFileSync(process.env.PAYER_FILE ?? ".testnet-wallets.json", "utf8"));
+const account = { address: w.payer.address };
+const NET = (await (await fetch(`${BASE}/menu`)).json()).x402.network;
+console.log(`network ${NET}, payer ${account.address}`);
+// The official x402 v2 client, independent of our MCP signer, so this also proves third-party clients work.
+const payFetch = wrapFetchWithPaymentFromConfig(fetch, {
+  schemes: [{ network: NET, client: new ExactEvmScheme(privateKeyToAccount(w.payer.privateKey)) }],
+});
+
+// Settlement can fail transiently on the shared testnet facilitator (nonce collisions on its own wallet).
+// A real agent retries; writes carry an idempotency_key so the retry can never double-write.
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function paid(url, init, tries = 4) {
+  let res;
+  for (let i = 0; i < tries; i++) {
+    res = await payFetch(url, init);
+    if (res.status !== 402) return res;
+    await sleep(3000 * (i + 1));
+  }
+  return res;
+}
+const writeInit = (key, value, idem) => ({
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ key, value, idempotency_key: idem }),
+});
+
+let failed = 0;
+const check = (name, ok, extra = "") => {
+  console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  " + extra}`);
+  if (!ok) failed++;
+};
+const j = async (res) => ({ status: res.status, json: await res.json().catch(() => null), pay: res.headers.get("payment-response") });
+
+const stats0 = await (await fetch(`${BASE}/stats`)).json();
+const menu = await j(await fetch(`${BASE}/menu`));
+check("menu is free", menu.status === 200, JSON.stringify(menu.json));
+const pub = menu.json?.signing?.publicKeyHex;
+
+let r = await j(await fetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
+check("unpaid write -> 402", r.status === 402, String(r.status));
+
+const key = "hello-" + Date.now();
+r = await j(await paid(`${BASE}/write`, writeInit(key, "first paid write", "first-" + key)));
+check("PAID write succeeds", r.status === 200 && r.json?.entry?.seq >= 1, JSON.stringify(r));
+check("settlement receipt returned", !!r.pay, "no X-PAYMENT-RESPONSE header");
+
+r = await j(await paid(`${BASE}/read?key=${encodeURIComponent(key)}`));
+check("PAID read returns the value", r.status === 200 && r.json?.value === "first paid write", JSON.stringify(r));
+
+r = await j(await payFetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "bad key\n", value: "x" }) }));
+check("invalid write -> 400 and not charged", r.status === 400 && !r.pay, JSON.stringify(r));
+
+const idemInit = writeInit("retry-demo", "v", "live-" + Date.now());
+const w1 = await j(await paid(`${BASE}/write`, idemInit));
+const w2 = await j(await paid(`${BASE}/write`, idemInit));
+check(
+  "idempotent retry returns the same entry, not a duplicate",
+  w1.status === 200 && w2.status === 200 && w2.json?.replayed === true && w1.json?.entry?.seq === w2.json?.entry?.seq,
+  JSON.stringify({ w1: w1.json?.entry?.seq, w2: w2.json?.entry?.seq, replayed: w2.json?.replayed }),
+);
+
+const before = await j(await fetch(`${BASE}/head?wallet=${account.address}`));
+const rn = await j(await paid(`${BASE}/renew`, { method: "POST" }));
+check(
+  "PAID renew extends the term by 30 days from the current expiry",
+  rn.status === 200 && rn.json?.expiresAt - before.json?.expiresAt === 30 * 86_400_000 && !!rn.pay,
+  JSON.stringify({ status: rn.status, before: before.json?.expiresAt, after: rn.json?.expiresAt }),
+);
+
+const exp = await j(await paid(`${BASE}/export`));
+check("PAID export succeeds", exp.status === 200, JSON.stringify(exp).slice(-1200));
+if (exp.status === 200) {
+  const v = await verifyExport(exp.json, pub);
+  check("export verifies offline against the published key", v.ok, v.errors.join("; "));
+  check("export wallet is the payer", String(exp.json.wallet).toLowerCase() === account.address.toLowerCase(), String(exp.json.wallet));
+}
+
+const head = await j(await fetch(`${BASE}/head?wallet=${account.address}`));
+check("public head available", head.status === 200 && head.json?.seq >= 1, JSON.stringify(head));
+
+// Security review, finding 2: renew settles upfront, so a missing workspace must be refused by the free pre-check.
+// A brand-new wallet with no funds: without the pre-check this would be a 402 (or a charge); with it, a free 404.
+const { generatePrivateKey } = await import("viem/accounts");
+const stranger = privateKeyToAccount(generatePrivateKey());
+const strangerFetch = wrapFetchWithPaymentFromConfig(fetch, { schemes: [{ network: NET, client: new ExactEvmScheme(stranger) }] });
+const sr = await strangerFetch(`${BASE}/renew`, { method: "POST" });
+check("renew for a wallet with no workspace is refused free (pre-check 404, nothing settled)", sr.status === 404 && !sr.headers.get("payment-response"), String(sr.status));
+
+// Finding 1: one signed payment buys one call. Sign once with our own client, send it 5 times at once.
+const { createPaymentHeader, decodePaymentRequired } = await import("../mcp/x402.mjs");
+const unpaid = await fetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+const required = decodePaymentRequired(unpaid.headers.get("PAYMENT-REQUIRED"));
+const oneHeader = await createPaymentHeader(privateKeyToAccount(w.payer.privateKey), required, required.accepts[0]);
+const burst = await Promise.all(
+  Array.from({ length: 5 }, (_, i) =>
+    fetch(`${BASE}/write`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "PAYMENT-SIGNATURE": oneHeader },
+      body: JSON.stringify({ key: `burst-${Date.now()}-${i}`, value: "one payment" }),
+    }).then((res) => ({ status: res.status, paid: !!res.headers.get("payment-response") })),
+  ),
+);
+check(
+  "one payment sent 5 times at once is served exactly once",
+  burst.filter((b) => b.status === 200).length === 1 && burst.filter((b) => b.paid).length === 1 && burst.filter((b) => b.status === 409).length === 4,
+  JSON.stringify(burst),
+);
+
+// Charged above: write, read, retry-demo write, its replay, renew, export = 6, plus the one burst write = 7. The payer is an excluded test wallet,
+// so they must land in excludedTestCalls and leave the real metric untouched. Recording runs after the response.
+await new Promise((res) => setTimeout(res, 3000));
+const stats1 = await (await fetch(`${BASE}/stats`)).json();
+check(
+  "settled calls are recorded, as test traffic only",
+  stats1.excludedTestCalls - stats0.excludedTestCalls === 7 && stats1.wallets === stats0.wallets && stats1.paidCalls === stats0.paidCalls,
+  JSON.stringify({ excluded: stats1.excludedTestCalls - stats0.excludedTestCalls, wallets: stats1.wallets - stats0.wallets, calls: stats1.paidCalls - stats0.paidCalls }),
+);
+
+console.log(`\npayer ${account.address}`);
+console.log(failed ? `${failed} FAILED` : "all passed");
+process.exit(failed ? 1 : 0);

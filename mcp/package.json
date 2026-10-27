@@ -1,0 +1,26 @@
+{
+  "name": "tabularium-mcp",
+  "version": "0.3.2",
+  "description": "MCP server for Tabularium: persistent, hash-chained agent memory plus a signed spending ledger. Pay any x402 service and keep a provable receipt.",
+  "mcpName": "io.github.SQLazy/tabularium",
+  "type": "module",
+  "bin": { "tabularium-mcp": "server.mjs" },
+  "files": ["server.mjs", "x402.mjs", "verify.mjs", "README.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "keywords": ["mcp", "model-context-protocol", "x402", "agent-memory", "ai-agents", "usdc", "base", "verifiable", "storage", "ledger", "receipts", "agent-payments"],
+  "repository": { "type": "git", "url": "git+https://github.com/SQLazy/tabularium.git", "directory": "mcp" },
+  "homepage": "https://github.com/SQLazy/tabularium/tree/main/mcp#readme",
+  "bugs": "https://github.com/SQLazy/tabularium/issues",
+  "scripts": {
+    "sync-verifier": "node -e \"require('fs').copyFileSync('../verifier/verify.mjs','verify.mjs')\"",
+    "prepack": "npm run sync-verifier",
+    "smoke": "node smoke.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "viem": "2.57.5",
+    "zod": "4.6.7"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,8 @@
+node_modules
+.wrangler
+.dev.vars
+*.log
+.testnet-wallets.json
+.secrets/
+mcp/verify.mjs.bak
+CLAUDE.md
