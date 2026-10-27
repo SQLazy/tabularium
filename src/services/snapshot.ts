@@ -53,6 +53,8 @@ async function readCapped(res: Response, cap: number): Promise<Uint8Array | null
 
 // robots.txt per origin, cached in this isolate for 10 minutes (plain strings only, never a pending promise).
 const robotsCache = new Map<string, { at: number; txt: string }>();
+/** Tests only: forget cached robots.txt files. */
+export const clearRobotsCache = () => robotsCache.clear();
 async function robotsFor(origin: string, deadline: number): Promise<string> {
   const hit = robotsCache.get(origin);
   if (hit && Date.now() - hit.at < 600_000) return hit.txt;
@@ -75,8 +77,8 @@ async function robotsFor(origin: string, deadline: number): Promise<string> {
   return txt;
 }
 
-/** Follows up to MAX_REDIRECTS, re-checking every hop's URL and robots.txt. */
-async function fetchPage(start: URL, selfHost: string): Promise<{ res: Response; finalUrl: URL } | Fail> {
+/** Follows up to MAX_REDIRECTS, re-checking every hop's URL and robots.txt. Exported for tests. */
+export async function fetchPage(start: URL, selfHost: string): Promise<{ res: Response; finalUrl: URL } | Fail> {
   const deadline = Date.now() + SNAPSHOT_LIMITS.TIMEOUT_MS;
   let url = start;
   for (let hop = 0; hop <= SNAPSHOT_LIMITS.MAX_REDIRECTS; hop++) {

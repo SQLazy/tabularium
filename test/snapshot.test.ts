@@ -103,3 +103,53 @@ describe("signed record", async () => {
     expect(snapshotMessage(record).startsWith("tabularium/snapshot/v1\n")).toBe(true);
   });
 });
+
+describe("fetchPage: every redirect hop and its robots.txt are checked again", async () => {
+  const { fetchPage, clearRobotsCache } = await import("../src/services/snapshot");
+  type Route = (url: URL) => Response;
+  const withFetch = async (routes: Record<string, Route>, run: () => Promise<unknown>) => {
+    const real = globalThis.fetch;
+    const seen: string[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      seen.push(url.href);
+      const route = routes[url.origin + url.pathname] ?? routes[url.pathname];
+      return route ? route(url) : new Response("not found", { status: 404 });
+    }) as typeof fetch;
+    clearRobotsCache();
+    try {
+      return { result: await run(), seen };
+    } finally {
+      globalThis.fetch = real;
+    }
+  };
+  const redirect = (to: string) => () => new Response(null, { status: 302, headers: { location: to } });
+  const page = () => new Response("<p>ok</p>", { status: 200, headers: { "content-type": "text/html" } });
+
+  it("a redirect to localhost, an IP or an internal name is refused before it is fetched", async () => {
+    for (const [to, code] of [["http://localhost/admin", "redirect_host_not_allowed"], ["http://127.0.0.1/", "redirect_ip_address_not_allowed"], ["http://169.254.169.254/latest", "redirect_ip_address_not_allowed"], ["http://db.internal/", "redirect_host_not_allowed"]]) {
+      const { result, seen } = await withFetch({ "https://a.example.com/start": redirect(to) }, () => fetchPage(new URL("https://a.example.com/start"), "self.example.com"));
+      expect(result).toMatchObject({ status: 400, error: code });
+      expect(seen.some((u) => u.startsWith(to.replace(/\/[^/]*$/, "")))).toBe(false);
+    }
+  });
+  it("a redirect into a robots.txt-disallowed path on another site is refused", async () => {
+    const { result } = await withFetch(
+      {
+        "https://a.example.com/start": redirect("https://b.example.com/private/x"),
+        "https://b.example.com/robots.txt": () => new Response("User-agent: *\nDisallow: /private\n", { status: 200 }),
+        "https://b.example.com/private/x": page,
+      },
+      () => fetchPage(new URL("https://a.example.com/start"), "self.example.com"),
+    );
+    expect(result).toMatchObject({ status: 403, error: "robots_disallowed" });
+  });
+  it("follows allowed redirects to the final page, and gives up after five", async () => {
+    const ok = await withFetch({ "https://a.example.com/1": redirect("/2"), "https://a.example.com/2": redirect("https://b.example.com/end"), "https://b.example.com/end": page }, () =>
+      fetchPage(new URL("https://a.example.com/1"), "self.example.com"),
+    );
+    expect((ok.result as { finalUrl: URL }).finalUrl.href).toBe("https://b.example.com/end");
+    const loop = await withFetch({ "/loop": redirect("/loop") }, () => fetchPage(new URL("https://a.example.com/loop"), "self.example.com"));
+    expect(loop.result).toMatchObject({ status: 502, error: "too_many_redirects" });
+  });
+});

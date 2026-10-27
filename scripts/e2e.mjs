@@ -275,7 +275,6 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
     ["cloud metadata", { url: "http://169.254.169.254/latest/meta-data" }, 400, "ip_address_not_allowed"],
     ["a non-http scheme", { url: "file:///etc/passwd" }, 400, "url_scheme_not_allowed"],
     ["a bad max_chars", { url: "https://example.com/", max_chars: 5 }, 400, "bad_max_chars"],
-    ["a redirect to localhost", { url: "https://httpbin.org/redirect-to?url=http%3A%2F%2Flocalhost%2F" }, 400, "redirect_host_not_allowed"],
     ["a path robots.txt disallows", { url: "https://httpbin.org/deny" }, 403, "robots_disallowed"],
     ["a 404 page", { url: "https://example.com/does-not-exist-tabularium" }, 424, "upstream_status"],
     ["an image", { url: "https://www.google.com/favicon.ico" }, 415, "unsupported_content_type"],
