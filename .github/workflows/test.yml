@@ -1,0 +1,121 @@
+# Pushes to branches other than main, and pull requests: typecheck, unit tests (Worker and MCP), and the end-to-end
+# test against a local no-paywall Worker. Main is tested by deploy.yml, which calls this workflow with paywall: true:
+# then the real x402 paywall also runs locally on Base Sepolia testnet (payment test + MCP smoke test), paid by a
+# throwaway testnet wallet (secret TESTNET_PAYER_KEY). release-mcp.yml calls it with mcp_npx to test a published version.
+name: Test
+
+on:
+  push:
+    branches-ignore: [main]
+    tags-ignore: ["**"]
+  pull_request:
+  workflow_call:
+    inputs:
+      paywall:
+        description: "Also run the real paywall locally on testnet (payment test + MCP smoke)"
+        type: boolean
+        default: false
+      mcp_npx:
+        description: "Also smoke-test this published tabularium-mcp version from a clean install (e.g. 0.5.1)"
+        type: string
+        required: false
+    secrets:
+      TESTNET_PAYER_KEY:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}-${{ inputs.mcp_npx || 'src' }}
+  cancel-in-progress: true
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mcp/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: mcp
+      - run: npm run typecheck
+      - name: Worker unit tests
+        run: npm test
+      - name: MCP offline tests (fake sellers, fake chain)
+        run: npm test
+        working-directory: mcp
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Dev signing key (throwaway, this run only)
+        run: npm run keygen -- --dev
+      - name: Start the no-paywall Worker
+        run: |
+          npx wrangler dev -c wrangler.dev.jsonc --port 8787 > wrangler.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf http://127.0.0.1:8787/menu > /dev/null && exit 0; sleep 1; done
+          cat wrangler.log; exit 1
+      - name: End-to-end (fetches example.com and httpbin.org for the snapshot checks)
+        run: node scripts/e2e.mjs
+      - if: failure()
+        run: tail -100 wrangler.log
+
+  paywall:
+    # The real x402 paywall on testnet. Needs the testnet payer secret, so not for pull requests from forks.
+    if: inputs.paywall || inputs.mcp_npx != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mcp/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: mcp
+      - name: Testnet settings (throwaway signing key, public testnet facilitator)
+        run: |
+          npm run keygen -- --dev
+          printf 'FACILITATOR_URL=https://x402.org/facilitator\nNETWORK=base-sepolia\n' >> .dev.vars
+      - name: Testnet payer
+        env:
+          TESTNET_PAYER_KEY: ${{ secrets.TESTNET_PAYER_KEY }}
+        run: node scripts/ci/payer-file.mjs
+      - name: Start the paywall Worker
+        run: |
+          npx wrangler dev --port 8788 > wrangler.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf http://127.0.0.1:8788/menu > /dev/null && exit 0; sleep 1; done
+          cat wrangler.log; exit 1
+      - name: Payment test (real testnet USDC)
+        run: node scripts/pay-test.mjs http://127.0.0.1:8788
+      - name: MCP smoke test (local server.mjs)
+        if: inputs.mcp_npx == ''
+        working-directory: mcp
+        run: node smoke.mjs http://127.0.0.1:8788
+      - name: MCP smoke test (published tabularium-mcp@${{ inputs.mcp_npx }}, clean install)
+        if: inputs.mcp_npx != ''
+        working-directory: mcp
+        env:
+          npm_config_prefer_online: "true"
+        run: node smoke.mjs --npx tabularium-mcp@${{ inputs.mcp_npx }} http://127.0.0.1:8788
+      - if: failure()
+        run: tail -100 wrangler.log

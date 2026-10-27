@@ -1,0 +1,129 @@
+# Publishes tabularium-mcp when a tag mcp-vX.Y.Z is pushed (scripts/release-mcp.mjs makes the tag).
+#   1. the tag, mcp/package.json and mcp/server.json must agree
+#   2. full tests, including the real paywall on testnet
+#   3. npm publish via trusted publishing (OIDC: no token, no 2FA prompt; provenance is automatic for public repos)
+#   4. wait until npm serves the new version, then publish to the MCP Registry (GitHub OIDC, verified mcp-publisher)
+#   5. smoke-test the published package from a clean install against a local testnet paywall
+# One-time setup on npmjs.com: package tabularium-mcp > Settings > Trusted Publisher > GitHub Actions:
+#   user SQLazy, repository tabularium, workflow release-mcp.yml, environment npm.
+name: Release MCP
+
+on:
+  push:
+    tags: ["mcp-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-mcp
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: v
+        run: |
+          tag="${GITHUB_REF_NAME#mcp-v}"
+          pkg="$(node -p "require('./mcp/package.json').version")"
+          srv="$(node -p "require('./mcp/server.json').version")"
+          srvpkg="$(node -p "require('./mcp/server.json').packages.find(p => p.identifier === 'tabularium-mcp').version")"
+          echo "tag $tag, package.json $pkg, server.json $srv / $srvpkg"
+          [ "$tag" = "$pkg" ] && [ "$tag" = "$srv" ] && [ "$tag" = "$srvpkg" ] || { echo "versions disagree"; exit 1; }
+          echo "version=$tag" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: version
+    uses: ./.github/workflows/test.yml
+    with:
+      paywall: true
+    secrets:
+      TESTNET_PAYER_KEY: ${{ secrets.TESTNET_PAYER_KEY }}
+
+  npm:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # trusted publishing
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: npm with trusted publishing (needs 11.5.1 or later)
+        run: npm install -g npm@11.21.1
+      - run: npm ci
+      - name: Publish (skipped if this version is already on npm)
+        run: |
+          v="${{ needs.version.outputs.version }}"
+          if npm view "tabularium-mcp@$v" version 2>/dev/null | grep -qx "$v"; then echo "already published"; exit 0; fi
+          npm publish
+      - name: Wait until npm serves it
+        run: |
+          v="${{ needs.version.outputs.version }}"
+          for i in $(seq 1 60); do
+            [ "$(npm view "tabularium-mcp@$v" version --prefer-online 2>/dev/null)" = "$v" ] && { echo "npm serves $v"; exit 0; }
+            sleep 10
+          done
+          echo "npm did not serve $v within 10 minutes"; exit 1
+
+  registry:
+    needs: [version, npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # MCP Registry login with GitHub OIDC
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Download and verify mcp-publisher (signature checked against the registry's release workflow)
+        run: |
+          set -euo pipefail
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+          archive="mcp-publisher_${os}_${arch}.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
+      - name: Check the registry lists it as latest
+        run: |
+          v="${{ needs.version.outputs.version }}"
+          for i in $(seq 1 12); do
+            latest="$(curl -s 'https://registry.modelcontextprotocol.io/v0/servers?search=io.github.SQLazy/tabularium' | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);const x=(j.servers||[]).find(e=>e._meta?.['io.modelcontextprotocol.registry/official']?.isLatest);console.log(x?.server?.version||'')})")"
+            [ "$latest" = "$v" ] && { echo "registry latest: $v"; exit 0; }
+            sleep 10
+          done
+          echo "registry latest is '$latest', expected $v"; exit 1
+
+  published:
+    needs: [version, registry]
+    uses: ./.github/workflows/test.yml
+    with:
+      mcp_npx: ${{ needs.version.outputs.version }}
+    secrets:
+      TESTNET_PAYER_KEY: ${{ secrets.TESTNET_PAYER_KEY }}

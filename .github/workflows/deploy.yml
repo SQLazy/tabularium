@@ -1,0 +1,70 @@
+# Every push to main: the full test suite, including the real x402 paywall locally on testnet. If Worker files
+# changed, deploy to Cloudflare, then run the free live checks against production (every paid route answers 402
+# with the menu price and payee; openapi.json, llms.txt and /stats agree). Manual runs deploy unconditionally.
+# Secrets: CLOUDFLARE_API_TOKEN (Workers edit), CLOUDFLARE_ACCOUNT_ID, TESTNET_PAYER_KEY. Worker secrets (signing
+# key, CDP keys) live in Cloudflare and are never touched by this workflow.
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      worker: ${{ steps.diff.outputs.worker }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "worker=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          before="${{ github.event.before }}"
+          if ! git cat-file -e "$before^{commit}" 2>/dev/null; then echo "worker=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          changed="$(git diff --name-only "$before" "${{ github.sha }}")"
+          echo "$changed"
+          if echo "$changed" | grep -qE '^(src/|wrangler\.jsonc$|package\.json$|package-lock\.json$|tsconfig\.json$)'; then
+            echo "worker=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "worker=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    uses: ./.github/workflows/test.yml
+    with:
+      paywall: true
+    secrets:
+      TESTNET_PAYER_KEY: ${{ secrets.TESTNET_PAYER_KEY }}
+
+  deploy:
+    needs: [changes, test]
+    if: needs.changes.outputs.worker == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+      - name: Live checks (free; nothing is charged)
+        run: |
+          for i in 1 2 3; do node scripts/live-check.mjs && exit 0; echo "retrying in 15 s"; sleep 15; done
+          exit 1
