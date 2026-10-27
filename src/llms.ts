@@ -77,7 +77,9 @@ GET  /head?wallet=0x...   (free: signed seq + hash, no values)
     claude mcp add tabularium --env TABULARIUM_PRIVATE_KEY=0x... -- npx -y tabularium-mcp
 
 Tools: tabularium_menu, tabularium_write, tabularium_read, tabularium_renew, tabularium_export, tabularium_head,
-tabularium_verify, tabularium_pay (pay any x402 v2 endpoint, keep a signed receipt), tabularium_ledger (spend totals).
+tabularium_verify, tabularium_pay (pay any x402 v2 endpoint, keep a signed receipt with a payer-signed intent; purchase_id
+makes retries safe), tabularium_ledger (spend totals, intent checks), tabularium_reconcile (receipts vs on-chain
+settlements), and one tool per call of every other Tabularium service (e.g. tabularium_snapshot_fetch).
 Safety limits: TABULARIUM_MAX_SPEND_USD per session (default 1), TABULARIUM_PAY_MAX_USD per purchase (default 0.10).
 Use a dedicated wallet holding a few dollars.
 

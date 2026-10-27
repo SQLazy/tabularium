@@ -102,8 +102,14 @@ export function createPayer(privateKey, { network, payTo, maxAtomic }) {
   if (!CHAIN_ID[network]) throw new Error(`unsupported network ${network}`);
   const account = privateKeyToAccount(privateKey);
 
-  /** Returns { res, payment }; payment is null when no payment was needed. */
-  async function payOnce(url, init = {}, { networks = [network], payTo: expectPayTo = payTo, maxAtomic: callCap, beforeSign } = {}) {
+  /**
+   * Returns { res, payment }; payment is null when no payment was needed.
+   * beforeSign(req, nonce): last chance to refuse, with the real price and the nonce the authorization will use
+   * (so a caller can sign its own intent over that nonce first). onSigned(header, req, nonce, resource): called
+   * with the finished PAYMENT-SIGNATURE before it is sent, so a caller can persist it and retry with the same
+   * authorization (which can settle at most once) instead of signing a second one.
+   */
+  async function payOnce(url, init = {}, { networks = [network], payTo: expectPayTo = payTo, maxAtomic: callCap, beforeSign, onSigned } = {}) {
     const allowed = networks.map((n) => CAIP2[n] ?? n);
     const cap = callCap !== undefined && BigInt(callCap) < BigInt(maxAtomic) ? callCap : maxAtomic;
     // Never follow redirects: the payment (and the receipt) must go to the URL that was asked for, and a signed
@@ -123,9 +129,10 @@ export function createPayer(privateKey, { network, payTo, maxAtomic }) {
     if (!req) throw new Error(`no acceptable payment option (need x402 v2 exact/EIP-3009 USDC on ${allowed.join(" or ")})`);
     if (expectPayTo && getAddress(req.payTo) !== getAddress(expectPayTo)) throw new Error(`402 asks to pay ${req.payTo}, but the menu says ${expectPayTo}`);
     if (BigInt(req.amount) > BigInt(cap)) throw new Error(`402 asks for ${req.amount} (atomic USDC), above the cap ${cap}`);
-    await beforeSign?.(req); // last chance to refuse (e.g. a spend cap), with the real price known; throws to abort
     const nonce = toHex(crypto.getRandomValues(new Uint8Array(32)));
+    await beforeSign?.(req, nonce); // last chance to refuse (e.g. a spend cap), with the real price known; throws to abort
     const header = await createPaymentHeader(account, required, req, { nonce });
+    await onSigned?.(header, req, nonce, required.resource);
     const res = await fetch(url, { ...init, redirect: "manual", headers: { ...(init.headers ?? {}), "PAYMENT-SIGNATURE": header } });
     return { res, payment: { requirement: req, resource: required.resource, nonce } };
   }
@@ -133,5 +140,7 @@ export function createPayer(privateKey, { network, payTo, maxAtomic }) {
   async function payFetch(url, init = {}, opts = {}) {
     return (await payOnce(url, init, opts)).res;
   }
-  return { address: account.address, payFetch, payOnce };
+  /** EIP-191 personal_sign with the paying wallet (verifiable by anyone with the address). */
+  const signMessage = (message) => account.signMessage({ message });
+  return { address: account.address, payFetch, payOnce, signMessage };
 }

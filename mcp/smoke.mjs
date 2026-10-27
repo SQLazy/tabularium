@@ -3,9 +3,11 @@
 // Pays with a throwaway payer: PAYER_FILE (path relative to the repo root), default ../.testnet-wallets.json.
 import { readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { checkIntent } from "./ledger.mjs";
 
 // --npx <spec> tests the published package (e.g. --npx tabularium-mcp@0.1.0) instead of the local server.mjs.
 const npxAt = process.argv.indexOf("--npx");
@@ -17,7 +19,7 @@ const transport = new StdioClientTransport({
   ...(npxSpec
     ? { command: "npx", args: ["-y", npxSpec], cwd: tmpdir() } // empty-ish dir, so npx fetches from the registry
     : { command: process.execPath, args: [new URL("./server.mjs", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1")] }),
-  env: { ...process.env, TABULARIUM_URL: BASE, TABULARIUM_PRIVATE_KEY: w.payer.privateKey, TABULARIUM_MAX_SPEND_USD: "0.05", TABULARIUM_TEST: "1" },
+  env: { ...process.env, TABULARIUM_URL: BASE, TABULARIUM_PRIVATE_KEY: w.payer.privateKey, TABULARIUM_MAX_SPEND_USD: "0.08", TABULARIUM_TEST: "1", TABULARIUM_STATE_DIR: mkdtempSync(join(tmpdir(), "tabularium-smoke-state-")) },
 });
 console.log(npxSpec ? `testing published ${npxSpec}` : "testing local server.mjs");
 const client = new Client({ name: "tabularium-smoke", version: "0.0.0" });
@@ -38,7 +40,8 @@ const call = async (name, args = {}) => {
 
 const { tools } = await client.listTools();
 const names = tools.map((t) => t.name).sort();
-check("lists 9 tools", names.join() === "tabularium_export,tabularium_head,tabularium_ledger,tabularium_menu,tabularium_pay,tabularium_read,tabularium_renew,tabularium_verify,tabularium_write", names.join());
+const core = "tabularium_export,tabularium_head,tabularium_ledger,tabularium_menu,tabularium_pay,tabularium_read,tabularium_reconcile,tabularium_renew,tabularium_verify,tabularium_write".split(",");
+check("lists the 10 core tools (plus one per call of other services)", core.every((n) => names.includes(n)) && names.filter((n) => !core.includes(n)).every((n) => /^tabularium_[a-z0-9-]+_/.test(n)), names.join());
 
 const instructions = client.getInstructions() ?? "";
 check("server instructions reach the client", /Tabularium/.test(instructions) && /real money/.test(instructions), instructions.slice(0, 80));
@@ -93,7 +96,8 @@ check("pay refuses a price above max_usd, before signing", r.isError && /above t
 r = await call("tabularium_menu");
 check("refused purchase charged nothing", r.json?.mcp?.sessionSpentUsd === spentBefore, JSON.stringify(r.json?.mcp));
 
-r = await call("tabularium_pay", { url: `${BASE}/read?key=${key}`, reason: "smoke: buy one read", max_usd: 0.005 });
+const purchaseId = `smoke-${Date.now()}`;
+r = await call("tabularium_pay", { url: `${BASE}/read?key=${key}`, reason: "smoke: buy one read", max_usd: 0.005, purchase_id: purchaseId });
 const bought = r.json;
 check(
   "pay buys from an x402 endpoint and returns its response",
@@ -102,6 +106,17 @@ check(
 );
 check("pay records a settled transaction", /^0x[0-9a-fA-F]{64}$/.test(bought?.payment?.transaction ?? ""), JSON.stringify(bought?.payment));
 check("pay writes a signed receipt to the ledger", /^ledger\/\d{4}-\d{2}-\d{2}\//.test(bought?.receipt?.key ?? "") && !!bought?.receipt?.head?.sig, JSON.stringify(bought?.receipt));
+
+r = await call("tabularium_menu");
+const spentAfterBuy = r.json?.mcp?.sessionSpentUsd;
+r = await call("tabularium_pay", { url: `${BASE}/read?key=${key}`, reason: "smoke: buy one read", max_usd: 0.005, purchase_id: purchaseId });
+const replay = r.json;
+r = await call("tabularium_menu");
+check(
+  "the same purchase_id returns the first purchase and charges nothing",
+  replay?.replayed === true && replay?.payment?.transaction === bought?.payment?.transaction && r.json?.mcp?.sessionSpentUsd === spentAfterBuy,
+  JSON.stringify({ replay, spent: [spentAfterBuy, r.json?.mcp?.sessionSpentUsd] }).slice(0, 300),
+);
 
 r = await call("tabularium_pay", { url: `${BASE}/menu`, reason: "smoke: free endpoint" });
 check("pay on a free endpoint charges nothing and writes no receipt", !r.isError && r.json?.paid === false && !r.json?.receipt, r.text.slice(0, 200));
@@ -114,6 +129,12 @@ check(
     rec?.transaction === bought?.payment?.transaction && rec?.response?.sha256 === bought?.response?.sha256,
   JSON.stringify(rec),
 );
+const ic = await checkIntent(rec);
+check(
+  "receipt v2: accepted terms, purchase id, and an intent the payer signed over the nonce and the reason",
+  rec?.v === 2 && rec?.accepted?.payTo === liveMenu.payTo && rec?.purchaseId === purchaseId && ic?.ok === true && rec?.intent?.message?.includes(`nonce: ${rec?.paymentNonce}`),
+  JSON.stringify({ v: rec?.v, ic, accepted: rec?.accepted }).slice(0, 300),
+);
 
 r = await call("tabularium_ledger", { day_prefix: new Date().toISOString().slice(0, 7) });
 const host = new URL(BASE).host;
@@ -121,6 +142,15 @@ check(
   "ledger verifies the export and totals the purchase",
   !r.isError && r.json?.verification?.ok === true && r.json?.byService?.[host]?.count >= 1 && r.json?.latest?.some((x) => x.key === bought?.receipt?.key),
   r.text.slice(0, 300),
+);
+check("ledger checks every payer-signed intent and finds none invalid", r.json?.intents?.valid >= 1 && r.json?.intents?.invalid?.length === 0, JSON.stringify(r.json?.intents));
+
+r = await call("tabularium_reconcile", { days: 2 });
+const net = r.json?.networks?.[liveMenu.x402.network];
+check(
+  "reconcile: every receipt matches an on-chain settlement, and no purchase outside Tabularium lacks a receipt",
+  !r.isError && r.json?.exportVerified === true && net && net.unsettled.length === 0 && net.mismatched.length === 0 && net.unrecorded.length === 0 && net.serviceCalls.count > 0,
+  r.text.slice(0, 600),
 );
 
 // Check the spend cap with a fresh server whose cap is below any price:

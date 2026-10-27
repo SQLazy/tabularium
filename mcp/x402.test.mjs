@@ -146,3 +146,27 @@ test("a seller asking for a long authorization window gets at most 10 minutes", 
   const validBefore = Number(JSON.parse(atob(calls[1])).payload.authorization.validBefore);
   assert.ok(validBefore <= before + 600 + 2, `validBefore ${validBefore - before}s ahead`);
 });
+
+test("beforeSign gets the nonce the authorization uses, and onSigned gets the header before it is sent", async () => {
+  const calls = fakeFetch([good]);
+  const p = payer();
+  const seen = {};
+  await p.payOnce("https://svc/write", {}, {
+    maxAtomic: 1000n,
+    beforeSign: (req, nonce) => void (seen.before = { amount: req.amount, nonce, sent: calls.length }),
+    onSigned: (header, req, nonce) => void (seen.signed = { header, nonce, sent: calls.length }),
+  });
+  const h = JSON.parse(atob(calls[1]));
+  assert.equal(seen.before.nonce, h.payload.authorization.nonce);
+  assert.equal(seen.signed.nonce, h.payload.authorization.nonce);
+  assert.equal(seen.signed.header, calls[1]);
+  assert.equal(seen.before.sent, 1); // only the unpaid probe had gone out
+  assert.equal(seen.signed.sent, 1); // the paid request had not been sent yet
+});
+
+test("signMessage is EIP-191 from the paying wallet", async () => {
+  const { verifyMessage } = await import("viem");
+  const p = payer();
+  const signature = await p.signMessage("tabularium/intent/v1\nhello");
+  assert.equal(await verifyMessage({ address: p.address, message: "tabularium/intent/v1\nhello", signature }), true);
+});
