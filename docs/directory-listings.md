@@ -63,6 +63,6 @@ zero dependencies.
 | MCP Registry | `mcp-publisher publish` | listed (0.3.1) |
 | x402 Bazaar | automatic after settled CDP payments | listed (4 routes) |
 | Glama (glama.ai/mcp/servers) | Indexes GitHub; claim the listing (glama.json in repo root names SQLazy) | to claim |
-| mcp.so | /submit, login | to submit |
+| mcp.so | /submit, login | skipped: listing costs $39 (2026-10-26); revisit once /stats shows paying wallets |
 | Smithery (smithery.ai/new) | GitHub login; check it accepts local stdio (npx) servers | to check |
 | PulseMCP | reportedly syncs from the MCP Registry | check in a few days |
