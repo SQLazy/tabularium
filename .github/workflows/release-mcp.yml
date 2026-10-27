@@ -56,10 +56,11 @@ jobs:
         working-directory: mcp
     steps:
       - uses: actions/checkout@v7
+      # No registry-url here on purpose: it writes an .npmrc with a placeholder token, which npm would use instead
+      # of the trusted-publishing OIDC exchange. npm publishes to registry.npmjs.org by default.
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
       - name: npm with trusted publishing (needs 11.5.1 or later)
         run: npm install -g npm@11.21.1
       - run: npm ci
@@ -67,7 +68,18 @@ jobs:
         run: |
           v="${{ needs.version.outputs.version }}"
           if npm view "tabularium-mcp@$v" version 2>/dev/null | grep -qx "$v"; then echo "already published"; exit 0; fi
-          npm publish
+          npm --version
+          set +e
+          npm publish --loglevel=notice 2>&1 | tee publish.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            # Job logs need a GitHub sign-in; annotations are public, so surface npm's own error lines there.
+            grep -E "npm (error|ERR!)|E40[0-9]|OIDC|provenance|trusted" publish.log | head -8 | while IFS= read -r line; do
+              echo "::error title=npm publish::$(echo "$line" | tr -d '%' | cut -c1-300)"
+            done
+            exit "$status"
+          fi
       - name: Wait until npm serves it
         run: |
           v="${{ needs.version.outputs.version }}"
