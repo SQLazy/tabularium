@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
-import { verifyExport } from "../verifier/verify.mjs";
+import { verifyExport, verifySnapshot } from "../verifier/verify.mjs";
 
 const BASE = (process.argv[2] ?? "").replace(/\/$/, "");
 if (!BASE) throw new Error("usage: node scripts/pay-test.mjs <baseUrl>");
@@ -79,9 +79,9 @@ check("llms.txt is free and shows the live prices", llms.status === 200 && menu.
     return priceOf(rest.split("?")[0], method.toLowerCase()) === c.price.slice(1);
   });
   check("openapi.json is free and prices every paid call as the menu does", oa.status === 200 && doc?.openapi === "3.1.0" && same, String(oa.status));
-  const probes = [["POST", "/write"], ["GET", "/read"], ["POST", "/renew"], ["GET", "/export"]];
+  const probes = menu.json.services.flatMap((s) => s.calls.map((c) => c.call.split(" ")));
   const got = await Promise.all(probes.map(async ([method, path]) => (await tfetch(`${BASE}${path}`, { method })).status));
-  check("bare probes of all four paid routes get 402", got.every((s) => s === 402), got.join(","));
+  check(`bare probes of all ${probes.length} paid routes get 402`, probes.length >= 5 && got.every((s) => s === 402), got.join(","));
 }
 
 let r = await j(await tfetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
@@ -156,13 +156,27 @@ check(
   JSON.stringify(burst),
 );
 
-// Charged above: write, read, retry-demo write, its replay, renew, export = 6, plus the one burst write = 7. The payer is an excluded test wallet,
+// Snapshot service: one paid fetch, verified offline; a refused URL is not charged.
+{
+  const snapInit = (url) => ({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url }) });
+  const sn = await j(await paid(`${BASE}/snapshot/fetch`, snapInit("https://example.com/")));
+  const sv = sn.status === 200 ? await verifySnapshot(sn.json, pub) : { ok: false, errors: [] };
+  check(
+    "PAID snapshot returns the page and a signature that verifies offline",
+    sn.status === 200 && !!sn.pay && sv.ok && String(sn.json.snapshot.wallet).toLowerCase() === account.address.toLowerCase(),
+    JSON.stringify({ status: sn.status, errors: sv.errors, body: sn.json }).slice(0, 300),
+  );
+  const bad = await j(await payFetch(`${BASE}/snapshot/fetch`, snapInit("http://localhost/")));
+  check("snapshot of a non-public URL -> 400 and not charged", bad.status === 400 && !bad.pay, JSON.stringify(bad));
+}
+
+// Charged above: write, read, retry-demo write, its replay, renew, export = 6, the one burst write = 7, one snapshot = 8. The payer is an excluded test wallet,
 // so they must land in excludedTestCalls and leave the real metric untouched. Recording runs after the response.
 await new Promise((res) => setTimeout(res, 3000));
 const stats1 = await (await tfetch(`${BASE}/stats`)).json();
 check(
   "settled calls are recorded, as test traffic only",
-  stats1.excludedTestCalls - stats0.excludedTestCalls === 7 && stats1.wallets === stats0.wallets && stats1.paidCalls === stats0.paidCalls,
+  stats1.excludedTestCalls - stats0.excludedTestCalls === 8 && stats1.wallets === stats0.wallets && stats1.paidCalls === stats0.paidCalls,
   JSON.stringify({ excluded: stats1.excludedTestCalls - stats0.excludedTestCalls, wallets: stats1.wallets - stats0.wallets, calls: stats1.paidCalls - stats0.paidCalls }),
 );
 

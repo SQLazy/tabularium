@@ -9,7 +9,7 @@ const env = { NETWORK: "base-sepolia", PAY_TO: "0x951BD91AD61d2D867F21b54D2f717D
 describe("Bazaar listing", () => {
   it("every paid route declares a valid discovery extension", () => {
     const r = routes(env);
-    expect(Object.keys(r).sort()).toEqual(["GET /export", "GET /read", "POST /renew", "POST /write"]);
+    expect(Object.keys(r).sort()).toEqual(["GET /export", "GET /read", "POST /renew", "POST /snapshot/fetch", "POST /write"]);
     for (const [route, cfg] of Object.entries(r)) {
       // The server adds the HTTP method per request (seen in the live 402); validate that completed form.
       const ext = cfg.extensions.bazaar;
@@ -28,9 +28,10 @@ describe("Bazaar listing", () => {
   });
 
   it("service metadata fits the Bazaar limits (name <= 32 ASCII chars, <= 5 tags of <= 32)", () => {
-    const cfg = routes(env)["POST /write"];
+    for (const cfg of Object.values(routes(env))) {
     expect(cfg.serviceName).toMatch(/^[\x20-\x7e]{1,32}$/);
     expect(cfg.tags.length).toBeLessThanOrEqual(5);
     for (const t of cfg.tags) expect(t).toMatch(/^[\x20-\x7e]{1,32}$/);
+    }
   });
 });

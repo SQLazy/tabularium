@@ -3,7 +3,7 @@
 // has fixed USD x-payment-info matching the menu price and a 402 response; free routes carry no payment info.
 import { describe, expect, it } from "vitest";
 import { openApi } from "../src/openapi";
-import { PRICES } from "../src/policy";
+import { SERVICES } from "../src/services";
 import type { Env } from "../src/env";
 
 const origin = "https://tabularium.example";
@@ -11,7 +11,8 @@ const doc = openApi({ NETWORK: "base" } as Env, origin) as any;
 const ops = Object.entries(doc.paths).flatMap(([path, methods]: [string, any]) =>
   Object.entries(methods).map(([method, op]: [string, any]) => ({ path, method, op })),
 );
-const PAID: Record<string, keyof typeof PRICES> = { "post /write": "write", "get /read": "read", "post /renew": "renew", "get /export": "export" };
+// Every paid call of every service, with its price: "post /write" -> "$0.003".
+const PAID: Record<string, string> = Object.fromEntries(SERVICES.flatMap((s) => s.calls.map((c) => [`${c.method.toLowerCase()} ${c.path}`, c.price])));
 
 describe("openapi.json", () => {
   it("has the required top-level fields and points at llms.txt", () => {
@@ -30,12 +31,12 @@ describe("openapi.json", () => {
     }
   });
 
-  it("prices exactly the four paid calls, as the menu does, each with a 402", () => {
+  it("prices exactly the paid calls of every service, as the menu does, each with a 402", () => {
     const paid = ops.filter(({ op }) => op["x-payment-info"]);
     expect(paid.map(({ method, path }) => `${method} ${path}`).sort()).toEqual(Object.keys(PAID).sort());
     for (const { method, path, op } of paid) {
       const info = op["x-payment-info"];
-      expect(info.price).toEqual({ mode: "fixed", currency: "USD", amount: PRICES[PAID[`${method} ${path}`]].slice(1) });
+      expect(info.price).toEqual({ mode: "fixed", currency: "USD", amount: PAID[`${method} ${path}`].slice(1) });
       expect(info.protocols).toEqual([{ x402: {} }]);
       expect(op.responses["402"]).toBeTruthy();
     }

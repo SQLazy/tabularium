@@ -50,7 +50,15 @@ Tabularium is a small platform: one wallet pays for every service, and one signe
 Memory (the calls above, at their original paths) is the first service. Each service is one module in `src/services/`
 declaring its paid calls; the shared core in `src/core/` gives it the paywall, payer identity, the one-payment-one-call
 guard, `/stats` and its funnel, and its entries in `/menu` (`services`), `/openapi.json` and `/llms.txt`. New services
-live under `/<service id>/...`.
+live under `/<service id>/...`, and `tabularium-mcp` (0.4+) turns each of their calls into a tool on its next start.
+
+| Service | Call | Price | What |
+|---|---|---|---|
+| memory | the four calls above | see above | Hash-chained, signed workspace per wallet. |
+| snapshot | `POST /snapshot/fetch {url, max_chars?}` | $0.005 | A public web page as clean text, with an Ed25519-signed record of what was served: final URL after redirects, time, status, sha256 of the raw body and of the text. Charged only for 2xx text pages; refused URLs (non-public, robots.txt disallow, too large, not text, the site's own error) cost nothing. Fetches respect robots.txt for `TabulariumSnapshot` and `*`, and never reach IP addresses, internal names or private networks. |
+
+Verify a saved snapshot response offline: `node verifier/verify.mjs --snapshot response.json <signingPubKeyHex>`.
+It proves what Tabularium's fetcher received at that time, not what the site served to anyone else.
 
 Prices were set on 2026-10-26, before launch, to cover the Coinbase facilitator's fee ($0.001 per settled payment
 after the first 1,000 a month). A typical session (10 reads, 20 writes) costs about $0.08.
@@ -89,7 +97,7 @@ verifies against the key that was current when it was exported. Retired keys:
     npm install
     npm run keygen -- --dev                              # writes .dev.vars
     npx wrangler dev -c wrangler.dev.jsonc --port 8787   # NO paywall, local only
-    node scripts/e2e.mjs                                 # 55 checks
+    node scripts/e2e.mjs                                 # 71 checks (the snapshot ones fetch example.com and httpbin.org)
     npm test && npm run typecheck
 
 `src/dev-nopay.ts` removes the paywall and adds a 5ms async gap in the write path so the

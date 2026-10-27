@@ -41,3 +41,23 @@ live only in Cloudflare.
   spend cap and the networks allow-list (mainnet is opt-in). Seller responses are untrusted content.
 - **Signing key.** Held only as a Cloudflare secret; anyone with Worker-admin access could sign heads. Rotation
   keeps old public keys in `/menu` (`signing.retired`).
+
+## Snapshot service (`POST /snapshot/fetch`), 2026-10-27
+
+The server fetches a URL the caller chooses, so the main risk is being steered at something it should not reach.
+
+- **Targets:** http(s) only, default ports, no credentials in the URL, no IP literals (every IPv4 spelling the URL
+  parser accepts is normalized first, IPv6 is refused), no internal-looking names (localhost, .local, .internal,
+  .lan, .home, .corp, .arpa, ...), never the service's own host. Workers cannot reach private networks anyway; these
+  rules keep it so by design. Unit-tested, including the cloud metadata address.
+- **Redirects** are followed manually (at most 5) and every hop is checked again, robots.txt included. Mutation-
+  tested: without the per-hop check the fetcher tries localhost after a redirect.
+- **robots.txt** is honoured for `TabulariumSnapshot` and `*` (RFC 9309 longest match; mutation-tested). A robots.txt
+  that fails to load is treated as allow-all, a deliberate choice for single user-requested pages.
+- **Limits:** 5 MB body, 20 s total, text capped at 200,000 characters; binaries are refused. Nothing is cached or
+  stored server-side.
+- **Charging:** settles after success, like write and read, so every refusal is free. The same residual risk
+  applies (a payer who makes settlement fail after the fetch gets one page free; the gas costs more than $0.005).
+- **The signature** (domain tag `tabularium/snapshot/v1`, distinct from workspace heads) proves what Tabularium's
+  fetcher received and when. It does not prove what the site served to anyone else, and a site can serve different
+  content to different clients.

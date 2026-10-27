@@ -53,14 +53,51 @@ export async function verifyExport(exp, pubHex) {
   return { ok: errors.length === 0, errors, entries: entries.length };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const [file, pub] = process.argv.slice(2);
+// Snapshot service: the server signs "tabularium/snapshot/v1\n" + JSON of the record's fields in this order.
+const SNAPSHOT_FIELDS = ["v", "wallet", "url", "finalUrl", "fetchedAt", "status", "contentType", "bytes", "sha256", "textChars", "textSha256", "title", "truncated"];
+
+/**
+ * Verifies a /snapshot/fetch response ({snapshot, text, sig}): the text matches textSha256 and textChars, and the
+ * server's signature covers the record. Pass `rawBytes` (the page as saved) to also check sha256 and bytes.
+ * Proves what Tabularium's fetcher received at fetchedAt, not what the site served to anyone else.
+ */
+export async function verifySnapshot(res, pubHex, rawBytes) {
+  const errors = [];
+  const s = res?.snapshot;
+  if (!s || typeof res.text !== "string" || typeof res.sig !== "string") return { ok: false, errors: ["not a snapshot response"] };
+  if (res.text.length !== s.textChars) errors.push("text length does not match textChars");
+  if ((await sha256Hex(res.text)) !== s.textSha256) errors.push("text does not match textSha256");
+  if (rawBytes) {
+    if (rawBytes.byteLength !== s.bytes) errors.push("raw body size does not match bytes");
+    if (hex(await crypto.subtle.digest("SHA-256", rawBytes)) !== s.sha256) errors.push("raw body does not match sha256");
+  }
+  try {
+    const pub = await crypto.subtle.importKey("raw", fromHex(pubHex), { name: "Ed25519" }, false, ["verify"]);
+    const msg = enc.encode(`tabularium/snapshot/v1\n${JSON.stringify(SNAPSHOT_FIELDS.map((k) => s[k]))}`);
+    const ok = await crypto.subtle.verify({ name: "Ed25519" }, pub, Uint8Array.from(atob(res.sig), (c) => c.charCodeAt(0)), msg);
+    if (!ok) errors.push("snapshot signature invalid");
+  } catch (err) {
+    errors.push(`signature check failed: ${err.message}`);
+  }
+  return { ok: errors.length === 0, errors, url: s.finalUrl, fetchedAt: s.fetchedAt };
+}
+
+if (import.meta.url === `file://${process.argv[1]}` || import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, "/")}`) {
+  const args = process.argv.slice(2);
+  const snap = args[0] === "--snapshot";
+  const [file, pub] = snap ? args.slice(1) : args;
   if (!file || !pub) {
-    console.error("usage: node verifier/verify.mjs export.json <publicKeyHex>");
+    console.error("usage: node verifier/verify.mjs export.json <publicKeyHex>\n       node verifier/verify.mjs --snapshot response.json <publicKeyHex>");
     process.exit(2);
   }
   const { readFileSync } = await import("node:fs");
-  const r = await verifyExport(JSON.parse(readFileSync(file, "utf8")), pub);
+  const doc = JSON.parse(readFileSync(file, "utf8"));
+  if (snap) {
+    const r = await verifySnapshot(doc, pub);
+    console.log(r.ok ? `OK: snapshot of ${r.url} at ${new Date(r.fetchedAt).toISOString()} verified` : "FAILED:\n  " + r.errors.join("\n  "));
+    process.exit(r.ok ? 0 : 1);
+  }
+  const r = await verifyExport(doc, pub);
   console.log(r.ok ? `OK: ${r.entries} entries verified` : "FAILED:\n  " + r.errors.join("\n  "));
   process.exit(r.ok ? 0 : 1);
 }

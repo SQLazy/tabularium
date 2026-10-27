@@ -33,3 +33,8 @@ export const PRICES = {
   renew: "$0.25",
   export: "$0.01",
 } as const;
+
+/** Snapshot service prices (USDC per successful call). */
+export const SNAPSHOT_PRICES = {
+  fetch: "$0.005",
+} as const;

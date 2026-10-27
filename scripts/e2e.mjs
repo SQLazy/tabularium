@@ -2,7 +2,7 @@
 //   npx wrangler dev -c wrangler.dev.jsonc --port 8787   (in another shell)
 //   node scripts/e2e.mjs [baseUrl]
 import { readFileSync } from "node:fs";
-import { verifyExport } from "../verifier/verify.mjs";
+import { verifyExport, verifySnapshot } from "../verifier/verify.mjs";
 
 const BASE = process.argv[2] ?? "http://127.0.0.1:8787";
 const pub = readFileSync(".dev.vars", "utf8").match(/SIGNING_PUBKEY_HEX=(\w+)/)[1];
@@ -49,8 +49,8 @@ check("menu lists exactly four paid calls", r.json.calls.length === 4);
   const doc = await oa.json().catch(() => null);
   const paidOps = Object.values(doc?.paths ?? {}).flatMap((p) => Object.values(p)).filter((op) => op["x-payment-info"]);
   check(
-    "openapi.json is free, has four paid operations, each with security [] and a 402",
-    oa.status === 200 && paidOps.length === 4 && paidOps.every((op) => Array.isArray(op.security) && !op.security.length && op.responses["402"]) && doc.servers?.[0]?.url === BASE,
+    "openapi.json is free, has a paid operation per paid call of every service, each with security [] and a 402",
+    oa.status === 200 && paidOps.length === r.json.services.reduce((n, s) => n + s.calls.length, 0) && paidOps.every((op) => Array.isArray(op.security) && !op.security.length && op.responses["402"]) && doc.servers?.[0]?.url === BASE,
     JSON.stringify(doc)?.slice(0, 120),
   );
 }
@@ -218,7 +218,7 @@ check(
   m1.funnel.paid - m0.funnel.paid === 6 && s1.excludedTestFunnelEvents - s0.excludedTestFunnelEvents === 1,
   JSON.stringify({ paid: m1.funnel.paid - m0.funnel.paid, excluded: s1.excludedTestFunnelEvents - s0.excludedTestFunnelEvents }),
 );
-check("cross-service wallets is counted (0 while memory is the only service)", s1.crossServiceWallets === 0, String(s1.crossServiceWallets));
+check("memory-only wallets do not count as cross-service", s1.crossServiceWallets - (s0.crossServiceWallets ?? 0) === 0, String(s1.crossServiceWallets));
 r = await call("POST", "/write", rand(), { key: "bad key", value: "x" });
 await settle();
 const s2 = await stats();
@@ -233,6 +233,49 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
     res.status === 200 && s3.services.memory.funnel.paid === s2.services.memory.funnel.paid && s3.excludedTestFunnelEvents - s2.excludedTestFunnelEvents === 1,
     JSON.stringify({ status: res.status, paid: s3.services.memory.funnel.paid - s2.services.memory.funnel.paid }),
   );
+}
+
+// --- snapshot service (fetches the real internet: example.com and httpbin.org)
+{
+  const snap = (wallet, body) => call("POST", "/snapshot/fetch", wallet, body);
+  const S = rand();
+  const before = await stats();
+  r = await snap(S, { url: "https://example.com/" });
+  check("snapshot returns the page text and title", r.status === 200 && /documentation examples/.test(r.json?.text ?? "") && r.json?.snapshot?.title === "Example Domain", JSON.stringify(r.json)?.slice(0, 200));
+  check("snapshot record names the payer, the final URL and the raw body hash", r.json?.snapshot?.wallet === S && r.json?.snapshot?.finalUrl === "https://example.com/" && /^[0-9a-f]{64}$/.test(r.json?.snapshot?.sha256 ?? ""));
+  const sv = await verifySnapshot(r.json, pub);
+  check("snapshot verifies offline against the published key", sv.ok, sv.errors?.join("; "));
+  const forged = structuredClone(r.json);
+  forged.text = forged.text.replace("documentation", "advertising");
+  check("an edited snapshot text fails verification", !(await verifySnapshot(forged, pub)).ok);
+  const refused = [
+    ["localhost", { url: "http://localhost/" }, 400, "host_not_allowed"],
+    ["an IP address", { url: "http://127.0.0.1/" }, 400, "ip_address_not_allowed"],
+    ["cloud metadata", { url: "http://169.254.169.254/latest/meta-data" }, 400, "ip_address_not_allowed"],
+    ["a non-http scheme", { url: "file:///etc/passwd" }, 400, "url_scheme_not_allowed"],
+    ["a bad max_chars", { url: "https://example.com/", max_chars: 5 }, 400, "bad_max_chars"],
+    ["a redirect to localhost", { url: "https://httpbin.org/redirect-to?url=http%3A%2F%2Flocalhost%2F" }, 400, "redirect_host_not_allowed"],
+    ["a path robots.txt disallows", { url: "https://httpbin.org/deny" }, 403, "robots_disallowed"],
+    ["a 404 page", { url: "https://example.com/does-not-exist-tabularium" }, 424, "upstream_status"],
+    ["an image", { url: "https://www.google.com/favicon.ico" }, 415, "unsupported_content_type"],
+  ];
+  for (const [what, body, status, error] of refused) {
+    const x = await snap(S, body);
+    check(`snapshot refuses ${what} (${status} ${error}, not charged)`, x.status === status && x.json?.error === error, JSON.stringify({ status: x.status, body: x.json }).slice(0, 160));
+  }
+  r = await snap(S, { url: "https://httpbin.org/redirect/1" });
+  check("snapshot follows a redirect and signs the final URL", r.status === 200 && r.json?.snapshot?.finalUrl === "https://httpbin.org/get" && (await verifySnapshot(r.json, pub)).ok, JSON.stringify(r.json?.snapshot ?? r.json)?.slice(0, 160));
+  const mw = await call("POST", "/write", S, { key: "note", value: "same wallet, second service" });
+  await settle();
+  const after = await stats();
+  const sb = before.services?.snapshot ?? { paidCalls: 0, funnel: { paid: 0, rejected: 0 } };
+  const sa = after.services.snapshot;
+  check(
+    "snapshot stats count only the successful fetches, and failed ones as rejected",
+    sa.paidCalls - sb.paidCalls === 2 && sa.funnel.paid - sb.funnel.paid === 2 && sa.funnel.rejected - sb.funnel.rejected === refused.length && Math.abs(sa.revenueUsd - sb.revenueUsd - 0.01) < 1e-9,
+    JSON.stringify({ calls: sa.paidCalls - sb.paidCalls, paid: sa.funnel.paid - sb.funnel.paid, rejected: sa.funnel.rejected - sb.funnel.rejected }),
+  );
+  check("a wallet that paid for snapshot and memory counts once as cross-service", mw.status === 200 && after.crossServiceWallets - before.crossServiceWallets === 1, JSON.stringify({ before: before.crossServiceWallets, after: after.crossServiceWallets }));
 }
 
 console.log(failed ? `\n${failed} FAILED` : "\nall passed");
