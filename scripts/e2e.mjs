@@ -32,6 +32,12 @@ const check = (name, cond, extra = "") => {
 let r = await call("GET", "/menu");
 check("menu is free and publishes the signing key", r.status === 200 && r.json.signing.publicKeyHex === pub);
 check("menu lists exactly four paid calls", r.json.calls.length === 4);
+{
+  const lt = await fetch(BASE + "/llms.txt");
+  const text = await lt.text();
+  const pricesShown = r.json.calls.every((c) => text.includes(c.price));
+  check("llms.txt is free plain text and shows every menu price", lt.status === 200 && /text\/plain/.test(lt.headers.get("content-type") ?? "") && pricesShown && text.includes(BASE), text.slice(0, 80));
+}
 
 r = await call("POST", "/write", null, { key: "a", value: "x" });
 check("no payer header -> 400", r.status === 400 && r.json.error === "evm_payer_required");

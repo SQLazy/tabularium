@@ -16,7 +16,7 @@ by the server, so an agent can prove its history and walk away with it.
 | `POST /renew` | $0.25 | Extend by 30 days (from current expiry, so early renewal wastes nothing). |
 | `GET /export?since=` | $0.01 | Entries + values + signed head, verifiable offline. |
 
-Free: `GET /` and `/menu` (prices, policy, public signing key), `GET /head?wallet=` (signed seq + hash, no values).
+Free: `GET /llms.txt` (a plain-text guide for language models: when it fits, when not, exact formats), `GET /` and `/menu` (prices, policy, public signing key), `GET /head?wallet=` (signed seq + hash, no values).
 `GET /stats`: public aggregates of settled calls (paying wallets, 14-day return rate, calls, revenue). Wallets appear only
 as counts; keys and values are never recorded. Every payment is public on-chain anyway.
 

@@ -49,6 +49,10 @@ const menu = await j(await fetch(`${BASE}/menu`));
 check("menu is free", menu.status === 200, JSON.stringify(menu.json));
 const pub = menu.json?.signing?.publicKeyHex;
 
+const llms = await fetch(`${BASE}/llms.txt`);
+const llmsText = await llms.text();
+check("llms.txt is free and shows the live prices", llms.status === 200 && menu.json.calls.every((c) => llmsText.includes(c.price)), String(llms.status));
+
 let r = await j(await fetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
 check("unpaid write -> 402", r.status === 402, String(r.status));
 
@@ -115,7 +119,9 @@ const burst = await Promise.all(
 );
 check(
   "one payment sent 5 times at once is served exactly once",
-  burst.filter((b) => b.status === 200).length === 1 && burst.filter((b) => b.paid).length === 1 && burst.filter((b) => b.status === 409).length === 4,
+  // The duplicates are refused either by our nonce claim (409) or, if the first one has already settled, by the
+  // facilitator at verify (402). Either way: served once, paid once, never served again.
+  burst.filter((b) => b.status === 200).length === 1 && burst.filter((b) => b.paid).length === 1 && burst.every((b) => b.status === 200 || b.status === 409 || b.status === 402),
   JSON.stringify(burst),
 );
 
