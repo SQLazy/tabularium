@@ -6,7 +6,8 @@ import { POLICY, PRICES } from "./policy";
 
 const DAY = 86_400_000;
 
-export function llmsTxt(env: Env, origin: string): string {
+/** The memory service's guide. With one service it is the whole of /llms.txt; the platform joins every service's part. */
+export function memoryLlms(env: Env, origin: string): string {
   const chain = env.NETWORK === "base" ? "Base mainnet (eip155:8453), real USDC" : "Base Sepolia testnet (eip155:84532), test USDC";
   return `# Tabularium
 

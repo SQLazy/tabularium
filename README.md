@@ -37,8 +37,20 @@ operator can read values), large files (64 KB per value), or anything that must 
 Free: `GET /llms.txt` (a plain-text guide for language models: when it fits, when not, exact formats), `GET /openapi.json`
 (routes, schemas and prices for agent wallets and x402 explorers such as x402scan and AgentCash), `GET /` and `/menu`
 (prices, policy, public signing key), `GET /head?wallet=` (signed seq + hash, no values).
-`GET /stats`: public aggregates of settled calls (paying wallets, 14-day return rate, calls, revenue). Wallets appear only
-as counts; keys and values are never recorded. Every payment is public on-chain anyway.
+`GET /stats`: public aggregates of settled calls (paying wallets, 14-day return rate, calls, revenue), in total and per
+service, plus each service's demand funnel: price quotes served (402s to clients that sent no payment), paid calls,
+rejected payments, and quotes by coarse client family (agentcash, x402scan, node, python, browser, ...). Wallets appear
+only as counts; keys and values are never recorded. Every payment is public on-chain anyway. Unique askers are counted
+per day as a hash of IP + User-Agent with a random salt that is deleted when the day ends, so stored hashes cannot be
+linked back to anyone; the raw User-Agent is never stored.
+
+### Services
+
+Tabularium is a small platform: one wallet pays for every service, and one signed payment buys one call on any of them.
+Memory (the calls above, at their original paths) is the first service. Each service is one module in `src/services/`
+declaring its paid calls; the shared core in `src/core/` gives it the paywall, payer identity, the one-payment-one-call
+guard, `/stats` and its funnel, and its entries in `/menu` (`services`), `/openapi.json` and `/llms.txt`. New services
+live under `/<service id>/...`.
 
 Prices were set on 2026-10-26, before launch, to cover the Coinbase facilitator's fee ($0.001 per settled payment
 after the first 1,000 a month). A typical session (10 reads, 20 writes) costs about $0.08.
@@ -77,7 +89,7 @@ verifies against the key that was current when it was exported. Retired keys:
     npm install
     npm run keygen -- --dev                              # writes .dev.vars
     npx wrangler dev -c wrangler.dev.jsonc --port 8787   # NO paywall, local only
-    node scripts/e2e.mjs                                 # 25 checks
+    node scripts/e2e.mjs                                 # 55 checks
     npm test && npm run typecheck
 
 `src/dev-nopay.ts` removes the paywall and adds a 5ms async gap in the write path so the

@@ -12,10 +12,17 @@ const BASE = (process.argv[2] ?? "").replace(/\/$/, "");
 if (!BASE) throw new Error("usage: node scripts/pay-test.mjs <baseUrl>");
 const w = JSON.parse(readFileSync(process.env.PAYER_FILE ?? ".testnet-wallets.json", "utf8"));
 const account = { address: w.payer.address };
-const NET = (await (await fetch(`${BASE}/menu`)).json()).x402.network;
+// Every request this script makes carries the test marker, so our own runs never count as demand in the funnel.
+// Copies a Request's own headers when no init headers are given (setting init.headers would replace them).
+const tfetch = (input, init = {}) => {
+  const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined));
+  headers.set("x-tabularium-test", "1");
+  return fetch(input, { ...init, headers });
+};
+const NET = (await (await tfetch(`${BASE}/menu`)).json()).x402.network;
 console.log(`network ${NET}, payer ${account.address}`);
 // The official x402 v2 client, independent of our MCP signer, so this also proves third-party clients work.
-const payFetch = wrapFetchWithPaymentFromConfig(fetch, {
+const payFetch = wrapFetchWithPaymentFromConfig(tfetch, {
   schemes: [{ network: NET, client: new ExactEvmScheme(privateKeyToAccount(w.payer.privateKey)) }],
 });
 
@@ -44,19 +51,27 @@ const check = (name, ok, extra = "") => {
 };
 const j = async (res) => ({ status: res.status, json: await res.json().catch(() => null), pay: res.headers.get("payment-response") });
 
-const stats0 = await (await fetch(`${BASE}/stats`)).json();
-const menu = await j(await fetch(`${BASE}/menu`));
+const stats0 = await (await tfetch(`${BASE}/stats`)).json();
+const menu = await j(await tfetch(`${BASE}/menu`));
 check("menu is free", menu.status === 200, JSON.stringify(menu.json));
+{
+  const mem = menu.json?.services?.find((s) => s.id === "memory");
+  check(
+    "menu lists the services, and memory's calls and prices match the legacy list",
+    !!mem && mem.calls.length === menu.json.calls.length && mem.calls.every((c, i) => menu.json.calls[i].call.startsWith(c.call) && menu.json.calls[i].price === c.price),
+    JSON.stringify(menu.json?.services)?.slice(0, 200),
+  );
+}
 const pub = menu.json?.signing?.publicKeyHex;
 
-const llms = await fetch(`${BASE}/llms.txt`);
+const llms = await tfetch(`${BASE}/llms.txt`);
 const llmsText = await llms.text();
 check("llms.txt is free and shows the live prices", llms.status === 200 && menu.json.calls.every((c) => llmsText.includes(c.price)), String(llms.status));
 
 // Discovery for x402 explorers and agent wallets: free OpenAPI with the menu's prices, and every paid route answers
 // a bare probe (no body, no query, no payment) with 402, which is how x402scan registers a route.
 {
-  const oa = await fetch(`${BASE}/openapi.json`);
+  const oa = await tfetch(`${BASE}/openapi.json`);
   const doc = await oa.json().catch(() => null);
   const priceOf = (path, method) => doc?.paths?.[path]?.[method]?.["x-payment-info"]?.price?.amount;
   const same = menu.json.calls.every((c) => {
@@ -65,11 +80,11 @@ check("llms.txt is free and shows the live prices", llms.status === 200 && menu.
   });
   check("openapi.json is free and prices every paid call as the menu does", oa.status === 200 && doc?.openapi === "3.1.0" && same, String(oa.status));
   const probes = [["POST", "/write"], ["GET", "/read"], ["POST", "/renew"], ["GET", "/export"]];
-  const got = await Promise.all(probes.map(async ([method, path]) => (await fetch(`${BASE}${path}`, { method })).status));
+  const got = await Promise.all(probes.map(async ([method, path]) => (await tfetch(`${BASE}${path}`, { method })).status));
   check("bare probes of all four paid routes get 402", got.every((s) => s === 402), got.join(","));
 }
 
-let r = await j(await fetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
+let r = await j(await tfetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
 check("unpaid write -> 402", r.status === 402, String(r.status));
 
 const key = "hello-" + Date.now();
@@ -92,7 +107,7 @@ check(
   JSON.stringify({ w1: w1.json?.entry?.seq, w2: w2.json?.entry?.seq, replayed: w2.json?.replayed }),
 );
 
-const before = await j(await fetch(`${BASE}/head?wallet=${account.address}`));
+const before = await j(await tfetch(`${BASE}/head?wallet=${account.address}`));
 const rn = await j(await paid(`${BASE}/renew`, { method: "POST" }));
 check(
   "PAID renew extends the term by 30 days from the current expiry",
@@ -108,25 +123,25 @@ if (exp.status === 200) {
   check("export wallet is the payer", String(exp.json.wallet).toLowerCase() === account.address.toLowerCase(), String(exp.json.wallet));
 }
 
-const head = await j(await fetch(`${BASE}/head?wallet=${account.address}`));
+const head = await j(await tfetch(`${BASE}/head?wallet=${account.address}`));
 check("public head available", head.status === 200 && head.json?.seq >= 1, JSON.stringify(head));
 
 // Security review, finding 2: renew settles upfront, so a missing workspace must be refused by the free pre-check.
 // A brand-new wallet with no funds: without the pre-check this would be a 402 (or a charge); with it, a free 404.
 const { generatePrivateKey } = await import("viem/accounts");
 const stranger = privateKeyToAccount(generatePrivateKey());
-const strangerFetch = wrapFetchWithPaymentFromConfig(fetch, { schemes: [{ network: NET, client: new ExactEvmScheme(stranger) }] });
+const strangerFetch = wrapFetchWithPaymentFromConfig(tfetch, { schemes: [{ network: NET, client: new ExactEvmScheme(stranger) }] });
 const sr = await strangerFetch(`${BASE}/renew`, { method: "POST" });
 check("renew for a wallet with no workspace is refused free (pre-check 404, nothing settled)", sr.status === 404 && !sr.headers.get("payment-response"), String(sr.status));
 
 // Finding 1: one signed payment buys one call. Sign once with our own client, send it 5 times at once.
 const { createPaymentHeader, decodePaymentRequired } = await import("../mcp/x402.mjs");
-const unpaid = await fetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+const unpaid = await tfetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
 const required = decodePaymentRequired(unpaid.headers.get("PAYMENT-REQUIRED"));
 const oneHeader = await createPaymentHeader(privateKeyToAccount(w.payer.privateKey), required, required.accepts[0]);
 const burst = await Promise.all(
   Array.from({ length: 5 }, (_, i) =>
-    fetch(`${BASE}/write`, {
+    tfetch(`${BASE}/write`, {
       method: "POST",
       headers: { "content-type": "application/json", "PAYMENT-SIGNATURE": oneHeader },
       body: JSON.stringify({ key: `burst-${Date.now()}-${i}`, value: "one payment" }),
@@ -144,12 +159,21 @@ check(
 // Charged above: write, read, retry-demo write, its replay, renew, export = 6, plus the one burst write = 7. The payer is an excluded test wallet,
 // so they must land in excludedTestCalls and leave the real metric untouched. Recording runs after the response.
 await new Promise((res) => setTimeout(res, 3000));
-const stats1 = await (await fetch(`${BASE}/stats`)).json();
+const stats1 = await (await tfetch(`${BASE}/stats`)).json();
 check(
   "settled calls are recorded, as test traffic only",
   stats1.excludedTestCalls - stats0.excludedTestCalls === 7 && stats1.wallets === stats0.wallets && stats1.paidCalls === stats0.paidCalls,
   JSON.stringify({ excluded: stats1.excludedTestCalls - stats0.excludedTestCalls, wallets: stats1.wallets - stats0.wallets, calls: stats1.paidCalls - stats0.paidCalls }),
 );
+
+// The funnel: every request above was marked, so it lands in excludedTestFunnelEvents, not in memory's funnel.
+// (Real traffic can arrive during a live run, so the check allows for it: our own 7 charges must not show as paid.)
+{
+  const f0 = stats0.services?.memory?.funnel ?? { paid: 0 };
+  const f1 = stats1.services?.memory?.funnel;
+  const ours = stats1.excludedTestFunnelEvents - (stats0.excludedTestFunnelEvents ?? 0);
+  check("marked test traffic is kept out of the demand funnel", !!f1 && ours >= 14 && f1.paid - f0.paid < 7, JSON.stringify({ ours, paid: f1 && f1.paid - f0.paid }));
+}
 
 console.log(`\npayer ${account.address}`);
 console.log(failed ? `${failed} FAILED` : "all passed");

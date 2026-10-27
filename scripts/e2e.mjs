@@ -33,6 +33,14 @@ let r = await call("GET", "/menu");
 check("menu is free and publishes the signing key", r.status === 200 && r.json.signing.publicKeyHex === pub);
 check("menu lists exactly four paid calls", r.json.calls.length === 4);
 {
+  const mem = r.json.services?.find((s) => s.id === "memory");
+  check(
+    "menu lists the services; memory's calls match the legacy list",
+    !!mem && mem.calls.length === 4 && mem.calls.every((c, i) => r.json.calls[i].call.startsWith(c.call) && r.json.calls[i].price === c.price),
+    JSON.stringify(r.json.services)?.slice(0, 200),
+  );
+}
+{
   const lt = await fetch(BASE + "/llms.txt");
   const text = await lt.text();
   const pricesShown = r.json.calls.every((c) => text.includes(c.price));
@@ -196,9 +204,36 @@ check(
   JSON.stringify({ calls: d("paidCalls"), write: s1.byCall.write }),
 );
 check("multi-day wallets counted", d("multiDayWallets") === 2, String(d("multiDayWallets")));
+// Per service: memory is the only service, so it must carry exactly the platform's new calls.
+const m0 = s0.services?.memory ?? { paidCalls: 0, wallets: 0, funnel: { paid: 0, rejected: 0 }, return14d: { cohort: 0, returned: 0 } };
+const m1 = s1.services.memory;
+check(
+  "per-service stats: memory carries the new calls, wallets and cohort",
+  m1.paidCalls - m0.paidCalls === 6 && m1.wallets - m0.wallets === 4 && m1.return14d.cohort - m0.return14d.cohort === 3 && m1.return14d.returned - m0.return14d.returned === 1,
+  JSON.stringify({ calls: m1.paidCalls - m0.paidCalls, wallets: m1.wallets - m0.wallets, r14: m1.return14d }),
+);
+check("legacy byCall is memory's byCall", JSON.stringify(s1.byCall) === JSON.stringify(m1.byCall));
+check(
+  "funnel counts paid calls; the excluded test wallet stays out of it",
+  m1.funnel.paid - m0.funnel.paid === 6 && s1.excludedTestFunnelEvents - s0.excludedTestFunnelEvents === 1,
+  JSON.stringify({ paid: m1.funnel.paid - m0.funnel.paid, excluded: s1.excludedTestFunnelEvents - s0.excludedTestFunnelEvents }),
+);
+check("cross-service wallets is counted (0 while memory is the only service)", s1.crossServiceWallets === 0, String(s1.crossServiceWallets));
 r = await call("POST", "/write", rand(), { key: "bad key", value: "x" });
 await settle();
-check("failed calls are not counted", r.status === 400 && (await stats()).wallets === s1.wallets);
+const s2 = await stats();
+check("failed calls are not counted", r.status === 400 && s2.wallets === s1.wallets);
+check("a payment on a failed call is a rejected funnel event", s2.services.memory.funnel.rejected - m1.funnel.rejected === 1, String(s2.services.memory.funnel.rejected - m1.funnel.rejected));
+{
+  const res = await fetch(BASE + "/write", { method: "POST", headers: { "content-type": "application/json", "x-tabularium-test": "1", ...pay(rand()) }, body: JSON.stringify({ key: "m", value: "x" }) });
+  await settle();
+  const s3 = await stats();
+  check(
+    "a marked test request is kept out of the funnel",
+    res.status === 200 && s3.services.memory.funnel.paid === s2.services.memory.funnel.paid && s3.excludedTestFunnelEvents - s2.excludedTestFunnelEvents === 1,
+    JSON.stringify({ status: res.status, paid: s3.services.memory.funnel.paid - s2.services.memory.funnel.paid }),
+  );
+}
 
 console.log(failed ? `\n${failed} FAILED` : "\nall passed");
 process.exit(failed ? 1 : 0);
