@@ -45,6 +45,10 @@ for (const c of calls) {
   check(`${c.call}: llms.txt shows the price`, llms.includes(c.price));
 }
 
+const ayb = await get("/allyourbase");
+const aybHtml = await ayb.text();
+check("/allyourbase answers with the page", ayb.status === 200 && aybHtml.includes("ALL YOUR BASE ARE BELONG TO US"), String(ayb.status));
+
 const stats = await (await get("/stats")).json().catch(() => null);
 check("stats lists every service", (menu?.services ?? []).every((s) => stats?.services?.[s.id]));
 

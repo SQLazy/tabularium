@@ -61,6 +61,12 @@ check("menu lists exactly four paid calls", r.json.calls.length === 4);
   );
 }
 
+{
+  const page = await fetch(BASE + "/allyourbase");
+  const html = await page.text();
+  check("/allyourbase is free and renders (live number or COUNTING...)", page.status === 200 && html.includes("ALL YOUR BASE ARE BELONG TO US") && /PAID BY MACHINES ON BASE/.test(html), String(page.status));
+}
+
 r = await call("POST", "/write", null, { key: "a", value: "x" });
 check("no payer header -> 400", r.status === 400 && r.json.error === "evm_payer_required");
 

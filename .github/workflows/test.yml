@@ -6,7 +6,7 @@ name: Test
 
 on:
   push:
-    branches-ignore: [main]
+    branches-ignore: [main, ayb-data]
     tags-ignore: ["**"]
   pull_request:
   workflow_call:
