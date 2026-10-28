@@ -77,18 +77,29 @@ async function logsAdaptive(url, filter, from, to) {
 }
 
 /** A wallet's x402 payments over the last 'days' days, read from a public node. */
-async function walletPayments(url, wallet, days) {
+async function walletPayments(url, wallet, days, onProgress) {
   const who = "0x" + wallet.toLowerCase().slice(2).padStart(64, "0");
   const head = Number(BigInt(await rpc(url, "eth_blockNumber", [])));
   const headTs = Number(BigInt((await rpc(url, "eth_getBlockByNumber", ["0x" + head.toString(16), false])).timestamp)) * 1000;
   const from = head - days * DAY_BLOCKS + 1;
-  const auth = [];
-  const transfers = [];
+  // All ranges at once (each is one slow eth_getLogs); onProgress(done, total) lets the page show a bar.
+  const jobs = [];
   for (let s = from; s <= head; s += 50000) {
     const e = Math.min(s + 49999, head);
-    auth.push(...(await logsAdaptive(url, { address: USDC, topics: [AUTH_USED, who] }, s, e)));
-    transfers.push(...(await logsAdaptive(url, { address: USDC, topics: [TRANSFER, who] }, s, e)));
+    jobs.push({ topics: [AUTH_USED, who], s, e, kind: "auth" }, { topics: [TRANSFER, who], s, e, kind: "transfer" });
   }
+  let done = 0;
+  const results = await Promise.all(
+    jobs.map((j) =>
+      logsAdaptive(url, { address: USDC, topics: j.topics }, j.s, j.e).then((logs) => {
+        done++;
+        if (typeof onProgress === "function") onProgress(done, jobs.length);
+        return { kind: j.kind, logs };
+      }),
+    ),
+  );
+  const auth = results.filter((r) => r.kind === "auth").flatMap((r) => r.logs);
+  const transfers = results.filter((r) => r.kind === "transfer").flatMap((r) => r.logs);
   return x402Payments(auth, transfers, head, headTs);
 }
 `;

@@ -166,7 +166,11 @@ document.getElementById("f").addEventListener("submit", async (e) => {
   status.textContent = "WE GET SIGNAL... READING 7 DAYS OF BASE.";
   card.classList.add("hide");
   try {
-    const [payments] = await Promise.all([walletPayments(RPC, w, 7), namesReady]);
+    const progress = (done, total) => {
+      const filled = Math.round((done / total) * 14);
+      status.textContent = "WE GET SIGNAL... [" + "#".repeat(filled) + ".".repeat(14 - filled) + "] READING 7 DAYS OF BASE.";
+    };
+    const [payments] = await Promise.all([walletPayments(RPC, w, 7, progress), namesReady]);
     const s = summarize(payments, names);
     const short = w.slice(0, 6) + "…" + w.slice(-4);
     const lines = s.n
