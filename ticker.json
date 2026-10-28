@@ -1,77 +1,77 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-10-28T00:36:33.000Z",
+  "asOf": "2026-10-28T01:19:15.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53136024,
-    "toBlock": 53179223
+    "fromBlock": 53137305,
+    "toBlock": 53180504
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 3607.84,
-  "payments": 103052,
-  "payers": 2540,
-  "activeSellers": 719,
+  "usd": 3635.99,
+  "payments": 104428,
+  "payers": 2537,
+  "activeSellers": 714,
   "listedSellers": 1763,
   "biggest": {
     "usd": 30.01,
     "seller": "Laso Finance"
   },
   "perHourUsd": [
-    117.42,
-    97.25,
-    83.57,
-    119.01,
-    183.39,
-    95.05,
-    128.14,
-    165.84,
-    156.28,
-    131.3,
-    139.05,
-    181.49,
-    183.78,
-    149.29,
-    194.11,
-    212.38,
-    173.61,
-    139.91,
-    171.5,
-    143.08,
-    149.04,
-    187.15,
-    186.47,
-    119.72
+    120.07,
+    81.52,
+    101.63,
+    197.68,
+    89.85,
+    110.85,
+    170.05,
+    144.77,
+    137.74,
+    142.23,
+    164.59,
+    191.61,
+    168.39,
+    157.14,
+    236.03,
+    179.75,
+    158.74,
+    160.25,
+    135.7,
+    167.89,
+    174.69,
+    160.45,
+    155.35,
+    129.02
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1216.8,
-      "payments": 553
+      "usd": 1209.2,
+      "payments": 552
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1104.12,
-      "payments": 55206
+      "usd": 1135.32,
+      "payments": 56766
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 173.28,
-      "payments": 2671
+      "usd": 173.29,
+      "payments": 2673
     },
     {
       "seller": "Vite Recent release history",
       "host": "market.datapackvibe.com",
-      "usd": 170.05,
-      "payments": 17005
+      "usd": 171.52,
+      "payments": 17152
     },
     {
       "seller": "textforagents.com",
       "host": "textforagents.com",
-      "usd": 147.74,
-      "payments": 96
+      "usd": 147.8,
+      "payments": 102
     },
     {
       "seller": "IntegrityPhase",
@@ -82,8 +82,8 @@
     {
       "seller": "agent demand radar",
       "host": "agent402.tools",
-      "usd": 58.57,
-      "payments": 2291
+      "usd": 58.46,
+      "payments": 2294
     },
     {
       "seller": "stall-row",
@@ -100,9 +100,9 @@
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 41.75,
-      "payments": 835
+      "usd": 42.5,
+      "payments": 850
     }
   ],
-  "tookMs": 262244
+  "tookMs": 209830
 }
