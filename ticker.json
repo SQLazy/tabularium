@@ -1,77 +1,77 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-10-28T04:20:27.000Z",
+  "asOf": "2026-10-28T05:18:05.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53142741,
-    "toBlock": 53185940
+    "fromBlock": 53144470,
+    "toBlock": 53187669
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 3826.27,
-  "payments": 110841,
-  "payers": 2602,
-  "activeSellers": 782,
+  "usd": 3735.24,
+  "payments": 111891,
+  "payers": 2644,
+  "activeSellers": 797,
   "listedSellers": 1763,
   "biggest": {
-    "usd": 30.01,
-    "seller": "Laso Finance"
+    "usd": 27.5,
+    "seller": "IntegrityPhase"
   },
   "perHourUsd": [
-    197.58,
-    89.92,
-    111.84,
-    175.17,
-    141.02,
-    137.11,
-    142.6,
-    163.64,
-    191.41,
-    167.52,
-    194.54,
-    199.64,
-    179.56,
-    158.79,
-    160.12,
-    136.46,
-    172.27,
-    169,
-    199.01,
-    120.42,
-    128.29,
-    170.87,
-    174.87,
-    144.62
+    90.05,
+    107.93,
+    170.17,
+    139.96,
+    144.72,
+    140.61,
+    163.7,
+    194.13,
+    168.61,
+    156.21,
+    235.14,
+    171.15,
+    169.18,
+    159.44,
+    134.56,
+    168.44,
+    176.09,
+    158.86,
+    156.71,
+    125.49,
+    175.34,
+    166.67,
+    150.26,
+    111.83
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1328.6,
-      "payments": 66430
+      "usd": 1352.94,
+      "payments": 67647
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1218.3,
-      "payments": 553
+      "usd": 1187.8,
+      "payments": 551
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 173.29,
-      "payments": 2674
+      "usd": 173.3,
+      "payments": 2675
     },
     {
       "seller": "Vite Recent release history",
       "host": "market.datapackvibe.com",
-      "usd": 153.64,
-      "payments": 15364
+      "usd": 152.01,
+      "payments": 15201
     },
     {
       "seller": "textforagents.com",
       "host": "textforagents.com",
-      "usd": 149.5,
-      "payments": 113
+      "usd": 124.02,
+      "payments": 112
     },
     {
       "seller": "IntegrityPhase",
@@ -80,29 +80,29 @@
       "payments": 3
     },
     {
-      "seller": "Laso Finance",
-      "host": "laso.finance",
-      "usd": 47.45,
-      "payments": 11
-    },
-    {
-      "seller": "stall-row",
-      "host": "stall-row-production.up.railway.app",
-      "usd": 47.34,
-      "payments": 22
-    },
-    {
       "seller": "Apify",
       "host": "agi.apify.com",
       "usd": 42.7,
       "payments": 28
     },
     {
+      "seller": "stall-row",
+      "host": "stall-row-production.up.railway.app",
+      "usd": 41.59,
+      "payments": 20
+    },
+    {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 40.85,
-      "payments": 817
+      "usd": 40.55,
+      "payments": 811
+    },
+    {
+      "seller": "agent demand radar",
+      "host": "agent402.tools",
+      "usd": 38,
+      "payments": 1107
     }
   ],
-  "tookMs": 296795
+  "tookMs": 166043
 }
