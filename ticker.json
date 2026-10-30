@@ -1,101 +1,101 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-10-29T23:15:57.000Z",
+  "asOf": "2026-10-30T00:42:59.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53220006,
-    "toBlock": 53263205
+    "fromBlock": 53222617,
+    "toBlock": 53265816
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 3315.96,
-  "payments": 104139,
-  "payers": 1691,
-  "activeSellers": 628,
+  "usd": 3341.01,
+  "payments": 103876,
+  "payers": 1680,
+  "activeSellers": 643,
   "listedSellers": 1746,
   "biggest": {
     "usd": 20,
     "seller": "X Pay"
   },
   "perHourUsd": [
-    102.57,
-    114.25,
-    105.99,
-    122.02,
-    130.16,
-    126.02,
-    141.58,
-    147.27,
-    109.12,
-    135.93,
-    189.46,
-    112.63,
-    188.71,
-    148.32,
-    142.34,
-    197.67,
-    136.12,
-    193.43,
-    130.15,
-    130.33,
-    176.99,
-    131.72,
-    94.47,
-    108.7
+    109.48,
+    116.28,
+    136,
+    125.57,
+    125.37,
+    133.92,
+    152.64,
+    118.81,
+    156.34,
+    155.5,
+    126.03,
+    208.27,
+    132.51,
+    180.41,
+    145.88,
+    142.81,
+    180.44,
+    126.75,
+    177.74,
+    145.78,
+    114.88,
+    94.4,
+    121.43,
+    113.77
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1282.66,
-      "payments": 64136
+      "usd": 1275.96,
+      "payments": 63801
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1131.3,
-      "payments": 544
+      "usd": 1170.7,
+      "payments": 546
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 249.6,
-      "payments": 1941
+      "usd": 249.49,
+      "payments": 1919
     },
     {
       "seller": "Vite Recent release history",
       "host": "market.datapackvibe.com",
-      "usd": 113.21,
-      "payments": 11320
+      "usd": 116.83,
+      "payments": 11682
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 56.51,
-      "payments": 8157
-    },
-    {
-      "seller": "keyring-agent.blockchhub.link",
-      "host": "keyring-agent.blockchhub.link",
-      "usd": 50.1,
-      "payments": 1002
+      "usd": 50.68,
+      "payments": 7907
     },
     {
       "seller": "textforagents.com",
       "host": "textforagents.com",
-      "usd": 48.72,
-      "payments": 35
+      "usd": 48.73,
+      "payments": 37
     },
     {
-      "seller": "CheapTokens AI Inference",
-      "host": "cheaptokens.ai",
-      "usd": 31.25,
-      "payments": 30
+      "seller": "keyring-agent.blockchhub.link",
+      "host": "keyring-agent.blockchhub.link",
+      "usd": 47.7,
+      "payments": 954
     },
     {
       "seller": "StableEnrich",
       "host": "stableenrich.dev",
-      "usd": 30.23,
-      "payments": 1227
+      "usd": 33.67,
+      "payments": 1325
+    },
+    {
+      "seller": "CheapTokens AI Inference",
+      "host": "cheaptokens.ai",
+      "usd": 30.25,
+      "payments": 29
     },
     {
       "seller": "IntegrityPhase",
@@ -104,5 +104,5 @@
       "payments": 2
     }
   ],
-  "tookMs": 217209
+  "tookMs": 233659
 }
