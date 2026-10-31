@@ -21,6 +21,7 @@ export function funnelKind(r: { status: number; hasPayment: boolean; charged: bo
 const FAMILIES: [RegExp, string][] = [
   [/agentcash/, "agentcash"],
   [/x402scan/, "x402scan"],
+  [/tabularium-remote-mcp/, "remote-mcp"],
   [/tabularium-mcp/, "tabularium-mcp"],
   [/claude|anthropic/, "anthropic"],
   [/openai|chatgpt|gptbot/, "openai"],
