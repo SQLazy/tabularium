@@ -1,71 +1,71 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-01T09:15:19.000Z",
+  "asOf": "2026-11-01T10:13:59.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53324387,
-    "toBlock": 53367586
+    "fromBlock": 53326147,
+    "toBlock": 53369346
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 3262.51,
-  "payments": 83374,
-  "payers": 2183,
-  "activeSellers": 721,
+  "usd": 3294.95,
+  "payments": 82223,
+  "payers": 2177,
+  "activeSellers": 700,
   "listedSellers": 1753,
   "biggest": {
     "usd": 257.05,
     "seller": "Laso Finance"
   },
   "perHourUsd": [
-    112.88,
-    131.75,
-    176.56,
-    112.62,
-    144.69,
-    134.86,
-    402.53,
-    139.6,
-    139.95,
-    165.93,
-    135.86,
-    163.99,
-    118.39,
-    77.56,
-    80.92,
-    102.96,
-    148.61,
-    88.75,
-    136.46,
-    84.14,
-    119.37,
-    142.38,
-    98.44,
-    103.32
+    129.32,
+    181.02,
+    110.3,
+    146.68,
+    135,
+    145.65,
+    396.73,
+    137.58,
+    168.86,
+    135.46,
+    163.23,
+    119.24,
+    77.18,
+    80.49,
+    104.14,
+    148.2,
+    87.73,
+    137.62,
+    83.78,
+    119.6,
+    134.53,
+    104.87,
+    104.02,
+    143.72
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1234.1,
-      "payments": 560
+      "usd": 1265.1,
+      "payments": 563
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 963.47,
-      "payments": 48192
+      "usd": 961.13,
+      "payments": 48075
     },
     {
       "seller": "Laso Finance",
       "host": "laso.finance",
-      "usd": 257.07,
+      "usd": 267.07,
       "payments": 20
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 229.91,
-      "payments": 2002
+      "usd": 231.14,
+      "payments": 2247
     },
     {
       "seller": "CheapTokens AI Inference",
@@ -76,14 +76,14 @@
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 45.66,
-      "payments": 9087
+      "usd": 45.77,
+      "payments": 9188
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 40.25,
-      "payments": 805
+      "usd": 41.85,
+      "payments": 837
     },
     {
       "seller": "Trip research planner",
@@ -104,5 +104,5 @@
       "payments": 2
     }
   ],
-  "tookMs": 158000
+  "tookMs": 101509
 }
