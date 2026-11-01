@@ -1,65 +1,65 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-01T19:12:23.000Z",
+  "asOf": "2026-11-01T20:14:25.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53342299,
-    "toBlock": 53385498
+    "fromBlock": 53344160,
+    "toBlock": 53387359
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 3843.14,
-  "payments": 125773,
-  "payers": 1942,
-  "activeSellers": 710,
+  "usd": 4324.55,
+  "payments": 153391,
+  "payers": 1883,
+  "activeSellers": 713,
   "listedSellers": 1753,
   "biggest": {
     "usd": 150,
     "seller": "Laso Finance"
   },
   "perHourUsd": [
-    134.62,
-    163.75,
-    119.41,
-    77.3,
-    77.72,
-    107.11,
-    146.82,
-    88.62,
-    138.19,
-    83.78,
-    119.61,
-    130.51,
-    107.87,
-    104.51,
-    143.56,
-    94.14,
-    112.71,
-    273.62,
-    173.56,
-    188.77,
-    184.04,
-    237.82,
-    192.16,
-    642.95
+    162.88,
+    119.48,
+    77.1,
+    80.77,
+    103.72,
+    148.37,
+    88.69,
+    136.54,
+    84.26,
+    119.25,
+    137.69,
+    101.74,
+    104.01,
+    143.77,
+    94.51,
+    113.03,
+    274.24,
+    184.55,
+    179.19,
+    186.1,
+    238.7,
+    191.93,
+    651.41,
+    602.62
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1578.62,
-      "payments": 78946
+      "usd": 2082.49,
+      "payments": 104139
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1201.3,
-      "payments": 552
+      "usd": 1204.3,
+      "payments": 551
     },
     {
       "seller": "Web Audio cue module: open-15-d1",
       "host": "market.datapackvibe.com",
-      "usd": 210.62,
-      "payments": 21062
+      "usd": 235.24,
+      "payments": 23524
     },
     {
       "seller": "Laso Finance",
@@ -70,39 +70,39 @@
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 155.22,
-      "payments": 3058
+      "usd": 114.59,
+      "payments": 2929
     },
     {
       "seller": "CheapTokens AI Inference",
       "host": "cheaptokens.ai",
-      "usd": 51.05,
-      "payments": 41
+      "usd": 46.05,
+      "payments": 36
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 43.35,
-      "payments": 867
+      "usd": 43.15,
+      "payments": 863
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 40.81,
-      "payments": 3065
+      "usd": 39.92,
+      "payments": 3081
     },
     {
       "seller": "Strale",
       "host": "api.strale.io",
-      "usd": 30.7,
-      "payments": 770
+      "usd": 30.66,
+      "payments": 768
     },
     {
-      "seller": "Trip research planner",
-      "host": "fachada.chelsea-hermes.workers.dev",
-      "usd": 29.25,
-      "payments": 22
+      "seller": "agdata",
+      "host": "agdata.shveik.dev",
+      "usd": 29.22,
+      "payments": 2
     }
   ],
-  "tookMs": 135592
+  "tookMs": 153321
 }
