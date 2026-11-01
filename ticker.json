@@ -1,77 +1,77 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-01T06:23:07.000Z",
+  "asOf": "2026-11-01T07:14:39.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53319221,
-    "toBlock": 53362420
+    "fromBlock": 53320767,
+    "toBlock": 53363966
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 3304.75,
-  "payments": 85980,
-  "payers": 2276,
-  "activeSellers": 553,
+  "usd": 3289.13,
+  "payments": 85177,
+  "payers": 2207,
+  "activeSellers": 607,
   "listedSellers": 1753,
   "biggest": {
     "usd": 257.05,
     "seller": "Laso Finance"
   },
   "perHourUsd": [
-    136.61,
-    91.46,
-    145.93,
-    118.61,
-    122.48,
-    178.84,
-    104.78,
-    148.87,
-    139.43,
-    396.52,
-    146.59,
-    142.98,
-    195.74,
-    100.07,
-    161.11,
-    117.31,
-    74.33,
-    88.85,
-    104.87,
-    152.35,
-    91.05,
-    129.52,
-    80.12,
-    136.32
+    91.18,
+    140.56,
+    111.96,
+    130.56,
+    179.55,
+    110.89,
+    146.46,
+    134.96,
+    402.94,
+    139.33,
+    139.3,
+    166.79,
+    135.8,
+    163.02,
+    119.33,
+    77.66,
+    80.43,
+    103.51,
+    148.45,
+    88.67,
+    136.44,
+    84.29,
+    119.29,
+    137.77
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1257.6,
-      "payments": 563
+      "usd": 1231.6,
+      "payments": 561
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 946.09,
-      "payments": 47325
+      "usd": 949.94,
+      "payments": 47517
     },
     {
       "seller": "Laso Finance",
       "host": "laso.finance",
       "usd": 257.07,
-      "payments": 18
+      "payments": 20
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 249.05,
-      "payments": 1831
+      "usd": 249.11,
+      "payments": 1843
     },
     {
       "seller": "Web Audio cue module: open-15-d1",
       "host": "market.datapackvibe.com",
-      "usd": 67.56,
-      "payments": 6756
+      "usd": 54.12,
+      "payments": 5412
     },
     {
       "seller": "CheapTokens AI Inference",
@@ -82,14 +82,14 @@
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 46.87,
-      "payments": 8945
+      "usd": 47.16,
+      "payments": 8964
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 40,
-      "payments": 800
+      "usd": 39.95,
+      "payments": 799
     },
     {
       "seller": "BotPay NFT Mint",
@@ -98,11 +98,11 @@
       "payments": 320
     },
     {
-      "seller": "agdata",
-      "host": "agdata.shveik.dev",
-      "usd": 29.22,
-      "payments": 2
+      "seller": "Trip research planner",
+      "host": "fachada.chelsea-hermes.workers.dev",
+      "usd": 30,
+      "payments": 22
     }
   ],
-  "tookMs": 138273
+  "tookMs": 111126
 }
