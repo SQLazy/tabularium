@@ -9,7 +9,7 @@
     "subfolder": "mcp"
   },
   "websiteUrl": "https://github.com/SQLazy/tabularium/tree/main/mcp#readme",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "remotes": [
     {
       "type": "streamable-http",
@@ -20,7 +20,7 @@
     {
       "registryType": "npm",
       "identifier": "tabularium-mcp",
-      "version": "0.5.3",
+      "version": "0.5.4",
       "transport": {
         "type": "stdio"
       },
