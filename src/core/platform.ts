@@ -13,6 +13,7 @@ import { openApi } from "../openapi";
 import { CAIP2, PAYMENT_HEADER, isExcluded, payerOf, paymentNonce, walletStub, type C } from "./identity";
 import { callInput, micro, type PaidCall, type Service } from "./service";
 import { TEST_HEADER, clientFamily, funnelKind } from "./funnel";
+import { MCP_PATH } from "../mcp";
 
 // Higher-priced calls settle UPFRONT (before the handler): each is worth more than the gas it costs to make a
 // settlement fail after the handler ran (drain the wallet, or burn the nonce). A free precheck stops charges for a
@@ -151,6 +152,15 @@ export function createPlatform(services: Service[], opts: { paywall: boolean }) 
       x402: { version: 2, network: CAIP2[c.env.NETWORK], scheme: "exact", asset: "USDC", header: PAYMENT_HEADER },
       // The memory service's calls, in the shape tabularium-mcp <= 0.3 reads. Other services are under `services`.
       calls: (memory?.calls ?? []).map((x) => x.menu),
+      // Remote MCP endpoint (src/mcp.ts): the same calls as MCP tools, paid with the x402 MCP transport.
+      mcp: {
+        url: new URL(c.req.url).origin + MCP_PATH,
+        transport: "streamable-http",
+        payment:
+          'An unpaid tools/call returns PaymentRequired (isError: true); retry with the PaymentPayload in params._meta["x402/payment"]. ' +
+          'The settlement receipt comes back in result._meta["x402/payment-response"].',
+        stdioPackage: "tabularium-mcp (npm), for clients that do not pay over MCP themselves",
+      },
       free: ["GET /menu", ...services.flatMap((s) => (s.free ?? []).map((f) => f.menu ?? `${f.method} ${f.path}`)), "GET /stats", "GET /llms.txt", "GET /openapi.json"],
       policy: {
         termDays: POLICY.TERM_MS / 86_400_000,

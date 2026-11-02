@@ -20,6 +20,7 @@ Public usage stats: ${origin}/stats
 OpenAPI (routes, schemas, x-payment-info prices): ${origin}/openapi.json
 Source: https://github.com/SQLazy/tabularium (service FSL-1.1-MIT; MCP client and verifier MIT)
 MCP server: npm "tabularium-mcp" (MCP Registry: io.github.SQLazy/tabularium)
+Remote MCP server: ${origin}/mcp (Streamable HTTP; paid tools take x402 in params._meta["x402/payment"])
 
 ## When it fits
 
@@ -44,6 +45,7 @@ MCP server: npm "tabularium-mcp" (MCP Registry: io.github.SQLazy/tabularium)
 - POST /renew  ${PRICES.renew}    extend by ${POLICY.TERM_MS / DAY} days from the later of now or expiry
 - GET  /export ${PRICES.export}    full signed history and current values, verifiable offline
 - Free: GET /menu, GET /head?wallet=0x..., GET /stats, GET /llms.txt, GET /openapi.json
+- MCP: POST /mcp offers the same calls as tools (listing is free; each paid tool costs its route's price)
 
 Failed writes and reads (HTTP 4xx/5xx) are not charged. renew and export settle before running, after a free check
 that the workspace exists. One signed payment buys one call (a reused payment gets 409, not charged).
