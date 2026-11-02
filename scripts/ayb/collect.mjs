@@ -101,7 +101,9 @@ console.log(`EIP-3009 authorizations used in 24h: ${auth.length}`);
 const transfers = [];
 for (let i = 0; i < payeeList.length; i += 200) {
   const chunk = payeeList.slice(i, i + 200).map((p) => "0x" + p.slice(2).padStart(64, "0"));
-  transfers.push(...(await logs({ address: USDC, topics: [TRANSFER, null, chunk] }, from, head)));
+  // One at a time: push(...logs) passes every log as an argument and overflows the stack once a chunk returns
+  // ~100k+ logs (it did on 2026-11-01, at ~390k authorizations a day). Keeping only x402 payments also saves memory.
+  for (const l of await logs({ address: USDC, topics: [TRANSFER, null, chunk] }, from, head)) if (authTx.has(l.transactionHash)) transfers.push(l);
 }
 
 let usd = 0;
