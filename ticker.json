@@ -1,77 +1,83 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-02T16:18:13.000Z",
+  "asOf": "2026-11-02T17:14:55.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53380274,
-    "toBlock": 53423473
+    "fromBlock": 53381975,
+    "toBlock": 53425174
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 6202.61,
-  "payments": 269049,
-  "payers": 2298,
-  "activeSellers": 742,
+  "usd": 7141.61,
+  "payments": 265277,
+  "payers": 2319,
+  "activeSellers": 766,
   "listedSellers": 1790,
   "biggest": {
-    "usd": 55.79,
-    "seller": "Bitrefill"
+    "usd": 1000,
+    "seller": "Crypto Analytics Dashboards"
   },
   "perHourUsd": [
-    235.22,
-    204.18,
-    665.75,
-    593.17,
-    420.68,
-    532.59,
-    666.74,
-    531.08,
-    102.79,
-    141.03,
-    105.38,
-    135.67,
-    97.06,
-    117.25,
-    126.22,
-    123.39,
-    138.22,
-    212.11,
-    171.43,
-    164.02,
-    213.11,
-    128.43,
-    184.15,
-    192.93
+    191.69,
+    656.27,
+    601.45,
+    406.22,
+    534.63,
+    665.61,
+    562.19,
+    102.21,
+    142.78,
+    100.63,
+    140.94,
+    97.37,
+    116.85,
+    125.59,
+    123.33,
+    136.42,
+    212.64,
+    168.92,
+    164.4,
+    217.06,
+    129.82,
+    170.95,
+    199.82,
+    1173.82
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 3597.06,
-      "payments": 179855
+      "usd": 3531.63,
+      "payments": 176584
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1348.6,
-      "payments": 620
+      "usd": 1355.1,
+      "payments": 621
+    },
+    {
+      "seller": "Crypto Analytics Dashboards",
+      "host": "www.blockchainiq.co",
+      "usd": 1002.05,
+      "payments": 3
     },
     {
       "seller": "Research note - Section template",
       "host": "market.datapackvibe.com",
-      "usd": 595.6,
-      "payments": 59560
+      "usd": 572.55,
+      "payments": 57255
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 70.43,
-      "payments": 2093
+      "usd": 90.86,
+      "payments": 2181
     },
     {
       "seller": "BotPay NFT Mint",
       "host": "api.botpay.network",
-      "usd": 64,
-      "payments": 640
+      "usd": 62.1,
+      "payments": 621
     },
     {
       "seller": "Bitrefill",
@@ -82,27 +88,21 @@
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 45.65,
-      "payments": 913
+      "usd": 44.9,
+      "payments": 898
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 40.6,
-      "payments": 2093
+      "usd": 39.75,
+      "payments": 2082
     },
     {
       "seller": "CheapTokens AI Inference",
       "host": "cheaptokens.ai",
-      "usd": 22.08,
-      "payments": 21
-    },
-    {
-      "seller": "Losbeto Market Intelligence",
-      "host": "api.losbeto.xyz",
-      "usd": 20.08,
-      "payments": 342
+      "usd": 22.38,
+      "payments": 23
     }
   ],
-  "tookMs": 205696
+  "tookMs": 205834
 }
