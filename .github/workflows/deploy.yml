@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # the changes job looks up the last run that actually deployed
 
 concurrency:
   group: deploy-production
@@ -26,11 +27,20 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      # Compare with the commit that last DEPLOYED, not the previous push: a push whose deploy failed (say, a testnet
+      # flake in the paywall job) must not be forgotten by the next push that only touches tests or docs.
       - id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "worker=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          before="${{ github.event.before }}"
-          if ! git cat-file -e "$before^{commit}" 2>/dev/null; then echo "worker=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          before=""
+          for id in $(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs?branch=main&per_page=50" --jq '.workflow_runs[] | select(.conclusion=="success") | .id'); do
+            deployed=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id/jobs" --jq '[.jobs[] | select(.name=="deploy" and .conclusion=="success")] | length')
+            if [ "$deployed" -gt 0 ]; then before=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq .head_sha); break; fi
+          done
+          echo "last deployed commit: ${before:-none found}"
+          if [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then echo "worker=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           changed="$(git diff --name-only "$before" "${{ github.sha }}")"
           echo "$changed"
           if echo "$changed" | grep -qE '^(src/|wrangler\.jsonc$|package\.json$|package-lock\.json$|tsconfig\.json$)'; then
