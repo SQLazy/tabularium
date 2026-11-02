@@ -93,15 +93,19 @@ check("llms.txt is free and shows the live prices", llms.status === 200 && menu.
   // if it ever did not, an unsigned header naming any wallet would be served as that wallet, for free.
   const list = await (await tfetch(`${BASE}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }) })).json();
   const paidTools = (list.result?.tools ?? []).filter((t) => /^Paid /.test(t.description));
+  // A bare probe tells them apart for every tool: the paywall answers 402, a bare handler 400 (no payer).
+  // An unsigned header naming a wallet is the actual attack: tools with a free pre-check (renew, export) answer it
+  // with that check's refusal (404 for a wallet with no workspace), so it is sent to the others.
   const forged = btoa(JSON.stringify({ x402Version: 2, payload: { authorization: { from: "0x" + "be".repeat(20), nonce: "0x" + "77".repeat(32) } } }));
-  const mcpGot = await Promise.all(
-    paidTools.map(async (t) => {
-      const method = t.annotations?.readOnlyHint ? "GET" : "POST";
-      const init = { method, headers: { "PAYMENT-SIGNATURE": forged, ...(method === "POST" ? { "content-type": "application/json" } : {}) }, ...(method === "POST" ? { body: "{}" } : {}) };
-      return (await tfetch(`${BASE}/mcp/${t.name}`, init)).status;
-    }),
-  );
-  check(`all ${paidTools.length} MCP tool routes refuse an unsigned payment (402)`, paidTools.length === probes.length && mcpGot.every((s) => s === 402), mcpGot.join(","));
+  const probe = (t, headers = {}) => {
+    const method = t.annotations?.readOnlyHint ? "GET" : "POST";
+    return tfetch(`${BASE}/mcp/${t.name}`, { method, headers: { ...headers, ...(method === "POST" ? { "content-type": "application/json" } : {}) }, ...(method === "POST" ? { body: "{}" } : {}) }).then((r) => r.status);
+  };
+  const bare = await Promise.all(paidTools.map((t) => probe(t)));
+  check(`all ${paidTools.length} MCP tool routes are behind the paywall (bare probe 402)`, paidTools.length === probes.length && bare.every((s) => s === 402), bare.join(","));
+  const noPrecheck = paidTools.filter((t) => !/Settles before it runs/.test(t.description));
+  const forgedGot = await Promise.all(noPrecheck.map((t) => probe(t, { "PAYMENT-SIGNATURE": forged })));
+  check(`${noPrecheck.length} MCP tool routes refuse an unsigned payment (402)`, noPrecheck.length >= 3 && forgedGot.every((s) => s === 402), forgedGot.join(","));
 }
 
 let r = await j(await tfetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));
