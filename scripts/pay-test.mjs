@@ -162,16 +162,27 @@ check("renew for a wallet with no workspace is refused free (pre-check 404, noth
 const { createPaymentHeader, decodePaymentRequired } = await import("../mcp/x402.mjs");
 const unpaid = await tfetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
 const required = decodePaymentRequired(unpaid.headers.get("PAYMENT-REQUIRED"));
-const oneHeader = await createPaymentHeader(privateKeyToAccount(w.payer.privateKey), required, required.accepts[0]);
-const burst = await Promise.all(
-  Array.from({ length: 5 }, (_, i) =>
-    tfetch(`${BASE}/write`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "PAYMENT-SIGNATURE": oneHeader },
-      body: JSON.stringify({ key: `burst-${Date.now()}-${i}`, value: "one payment" }),
-    }).then((res) => ({ status: res.status, paid: !!res.headers.get("payment-response") })),
-  ),
-);
+const sendBurst = async () => {
+  const oneHeader = await createPaymentHeader(privateKeyToAccount(w.payer.privateKey), required, required.accepts[0]);
+  return Promise.all(
+    Array.from({ length: 5 }, (_, i) =>
+      tfetch(`${BASE}/write`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "PAYMENT-SIGNATURE": oneHeader },
+        body: JSON.stringify({ key: `burst-${Date.now()}-${i}`, value: "one payment" }),
+      }).then((res) => ({ status: res.status, paid: !!res.headers.get("payment-response") })),
+    ),
+  );
+};
+// The shared testnet facilitator sometimes fails a settlement on its own wallet ("replacement transaction
+// underpriced"): the one served copy then comes back 402 with a failed receipt and the rest 409. That is the guard
+// working and the facilitator flaking, so try once more with a fresh payment; any other shape fails at once.
+const facilitatorFlake = (b) => b.filter((x) => x.status === 200).length === 0 && b.filter((x) => x.status === 402 && x.paid).length === 1 && b.filter((x) => x.status === 409).length === 4;
+let burst = await sendBurst();
+if (facilitatorFlake(burst)) {
+  console.log(`      burst hit a facilitator settlement failure ${JSON.stringify(burst)}; retrying with a fresh payment`);
+  burst = await sendBurst();
+}
 check(
   "one payment sent 5 times at once is served exactly once",
   // The duplicates are refused either by our nonce claim (409) or, if the first one has already settled, by the
