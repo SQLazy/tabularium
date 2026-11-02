@@ -4,9 +4,11 @@
 //
 //   node scripts/remote-mcp-check.mjs [base]          free checks only, prints what the paid run would cost
 //   PAYER_FILE=.secrets/mainnet-payer.json node scripts/remote-mcp-check.mjs [base] --pay
+//   PAYER_FILE=.secrets/mainnet-payer.json node scripts/remote-mcp-check.mjs [base] --pay --renew
 //
 // Paid run (about $0.02): write stack/hello, read it back, snapshot example.com, export, then verify the export and
 // the snapshot offline against /menu's signing key, and check /stats counted it as excluded test traffic only.
+// --renew instead pays one renew ($0.25, +30 days) through /mcp: the Bazaar lists a tool only after a paid call.
 // Refuses to sign unless each requirement matches /menu (network, payee, USDC) and is within that call's menu price.
 import { readFileSync } from "node:fs";
 import { privateKeyToAccount } from "viem/accounts";
@@ -15,8 +17,9 @@ import { verifyExport, verifySnapshot } from "../verifier/verify.mjs";
 
 const args = process.argv.slice(2);
 const PAY = args.includes("--pay");
+const RENEW = args.includes("--renew");
 const BASE = (args.find((a) => !a.startsWith("--")) ?? "https://tabularium.matt-3e0.workers.dev").replace(/\/$/, "");
-const MAX_TOTAL_USD = 0.05;
+const MAX_TOTAL_USD = RENEW ? 0.3 : 0.05;
 const TEST = { "x-tabularium-test": "1" };
 
 let fails = 0;
@@ -56,7 +59,7 @@ check("initialize", init.result?.serverInfo?.name === "tabularium", init);
 const tools = (await rpc("tools/list", {})).result?.tools?.map((t) => t.name) ?? [];
 check("tools/list has the paid tools", ["tabularium_write", "tabularium_read", "tabularium_export", "tabularium_snapshot_fetch"].every((n) => tools.includes(n)), tools);
 
-const PLAN = [
+const PLAN = RENEW ? [["tabularium_renew", {}, "renew"]] : [
   ["tabularium_write", { key: "stack/hello", value: JSON.stringify({ hello: "stack", at: new Date().toISOString(), via: "remote /mcp" }), idempotency_key: `stack-hello-${Date.now()}` }, "write"],
   ["tabularium_read", { key: "stack/hello" }, "read"],
   ["tabularium_snapshot_fetch", { url: "https://example.com/" }, "snapshot/fetch"],
@@ -66,12 +69,12 @@ const menuPrice = (call) => price[call] ?? price[call.split("/").pop()];
 const total = PLAN.reduce((s, [, , c]) => s + (menuPrice(c) ?? Infinity), 0);
 console.log(`paid run would cost $${total.toFixed(3)} (cap $${MAX_TOTAL_USD})`);
 
-const quote = await call("tabularium_write", PLAN[0][1]);
+const quote = await call(PLAN[0][0], PLAN[0][1]);
 const pr = quote.result?.structuredContent;
 check("unpaid call returns PaymentRequired as a tool error", quote.result?.isError === true && pr?.x402Version === 2 && pr?.accepts?.length > 0, quote);
 // The Bazaar lists the TOOL from what a paying client echoes: a type "mcp" declaration, keyed on (resource.url, toolName).
 const bz = pr?.extensions?.bazaar?.info?.input;
-check("its Bazaar declaration is type mcp for this tool, over streamable-http", bz?.type === "mcp" && bz?.toolName === "tabularium_write" && bz?.transport === "streamable-http", pr?.extensions);
+check("its Bazaar declaration is type mcp for this tool, over streamable-http", bz?.type === "mcp" && bz?.toolName === PLAN[0][0] && bz?.transport === "streamable-http", pr?.extensions);
 check("its resource.url is this MCP endpoint", pr?.resource?.url === `${BASE}/mcp`, pr?.resource);
 
 if (!PAY) {
@@ -111,6 +114,7 @@ for (const [name, toolArgs, menuCall] of PLAN) {
   if (receipt?.transaction) console.log(`      tx ${receipt.transaction}`);
 }
 
+if (!RENEW) {
 const w = results.tabularium_write;
 check("read returns what the write stored", results.tabularium_read?.entry?.hash === w?.entry?.hash, { read: results.tabularium_read?.entry, write: w?.entry });
 const exp = results.tabularium_export;
@@ -119,6 +123,9 @@ check("export verifies offline against /menu's key", ve.ok, ve.errors);
 check("export contains stack/hello", exp?.entries?.some((e) => e.key === "stack/hello" && e.hash === w?.entry?.hash), exp?.entries?.slice(-3));
 const vs = results.tabularium_snapshot_fetch ? await verifySnapshot(results.tabularium_snapshot_fetch, PUB) : { ok: false, errors: ["no snapshot"] };
 check("snapshot verifies offline", vs.ok, vs.errors);
+} else {
+  check("renew extended the workspace", typeof results.tabularium_renew === "object" && results.tabularium_renew !== null, results.tabularium_renew);
+}
 
 // /stats records settled calls via waitUntil: give it a few seconds.
 let after;
