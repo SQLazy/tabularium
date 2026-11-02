@@ -50,7 +50,10 @@ describe("services", () => {
     expect(new Set(ids).size).toBe(ids.length);
     const keys = SERVICES.flatMap((s) => s.calls.map((c) => `${c.method} ${c.path}`));
     expect(new Set(keys).size).toBe(keys.length);
-    expect(Object.keys(platformRoutes({ NETWORK: "base", PAY_TO: "0x951BD91AD61d2D867F21b54D2f717D8FFF4aD28a" } as unknown as Env, SERVICES)).sort()).toEqual([...keys].sort());
+    // Each call is paid at its HTTP route and at its MCP tool's route (/mcp/<tool>), nothing else.
+    const routes = Object.keys(platformRoutes({ NETWORK: "base", PAY_TO: "0x951BD91AD61d2D867F21b54D2f717D8FFF4aD28a" } as unknown as Env, SERVICES));
+    expect(routes.filter((k) => !k.includes(" /mcp/")).sort()).toEqual([...keys].sort());
+    expect(routes.filter((k) => k.includes(" /mcp/")).length).toBe(keys.length);
   });
   it("memory keeps its original four paid routes at the root", () => {
     const memory = SERVICES.find((s) => s.id === "memory")!;

@@ -69,6 +69,10 @@ console.log(`paid run would cost $${total.toFixed(3)} (cap $${MAX_TOTAL_USD})`);
 const quote = await call("tabularium_write", PLAN[0][1]);
 const pr = quote.result?.structuredContent;
 check("unpaid call returns PaymentRequired as a tool error", quote.result?.isError === true && pr?.x402Version === 2 && pr?.accepts?.length > 0, quote);
+// The Bazaar lists the TOOL from what a paying client echoes: a type "mcp" declaration, keyed on (resource.url, toolName).
+const bz = pr?.extensions?.bazaar?.info?.input;
+check("its Bazaar declaration is type mcp for this tool, over streamable-http", bz?.type === "mcp" && bz?.toolName === "tabularium_write" && bz?.transport === "streamable-http", pr?.extensions);
+check("its resource.url is this MCP endpoint", pr?.resource?.url === `${BASE}/mcp`, pr?.resource);
 
 if (!PAY) {
   console.log(fails ? `${fails} FAILED` : "free checks passed. Add --pay (with PAYER_FILE) for the paid run.");

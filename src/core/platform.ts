@@ -13,7 +13,7 @@ import { openApi } from "../openapi";
 import { CAIP2, PAYMENT_HEADER, isExcluded, payerOf, paymentNonce, walletStub, type C } from "./identity";
 import { callInput, micro, type PaidCall, type Service } from "./service";
 import { TEST_HEADER, clientFamily, funnelKind } from "./funnel";
-import { MCP_PATH } from "../mcp";
+import { MCP_PATH, mcpTools } from "../mcp";
 
 // Higher-priced calls settle UPFRONT (before the handler): each is worth more than the gas it costs to make a
 // settlement fail after the handler ran (drain the wallet, or burn the nonce). A free precheck stops charges for a
@@ -25,20 +25,35 @@ const UPFRONT = { paymentFlow: "upfront" };
 type Paid = { service: string; call: PaidCall };
 const routeKey = (method: string, path: string) => `${method} ${path}`;
 
-/** The x402 route table for every paid call on the platform. */
-export function platformRoutes(env: Env, services: Service[]) {
-  const out: Record<string, Record<string, unknown> & { extensions: Record<string, unknown>; serviceName: string; tags: string[] }> = {};
+/**
+ * Every paid route on the platform, with the Bazaar declaration it advertises: each call's HTTP route (type "http")
+ * and its MCP tool's route MCP_PATH/<tool> (type "mcp"). Both run the same handler at the same price.
+ */
+function paidRoutes(services: Service[]) {
+  const tools = new Map(mcpTools(services).filter((t) => t.route).map((t) => [routeKey(t.method, t.path), t]));
+  const out: { key: string; service: Service; call: PaidCall; extensions: Record<string, unknown> }[] = [];
   for (const s of services) {
     for (const call of s.calls) {
-      out[routeKey(call.method, call.path)] = {
-        accepts: [{ scheme: "exact", price: call.price, network: CAIP2[env.NETWORK], payTo: env.PAY_TO, maxTimeoutSeconds: 60, ...(call.upfront ? { extra: UPFRONT } : {}) }],
-        description: call.description,
-        mimeType: "application/json",
-        serviceName: s.serviceName,
-        tags: s.tags,
-        extensions: call.discovery,
-      };
+      out.push({ key: routeKey(call.method, call.path), service: s, call, extensions: call.discovery });
+      const tool = tools.get(routeKey(call.method, call.path));
+      if (tool?.route && tool.discovery) out.push({ key: routeKey(call.method, tool.route), service: s, call, extensions: tool.discovery });
     }
+  }
+  return out;
+}
+
+/** The x402 route table for every paid route on the platform. */
+export function platformRoutes(env: Env, services: Service[]) {
+  const out: Record<string, Record<string, unknown> & { extensions: Record<string, unknown>; serviceName: string; tags: string[] }> = {};
+  for (const { key, service: s, call, extensions } of paidRoutes(services)) {
+    out[key] = {
+      accepts: [{ scheme: "exact", price: call.price, network: CAIP2[env.NETWORK], payTo: env.PAY_TO, maxTimeoutSeconds: 60, ...(call.upfront ? { extra: UPFRONT } : {}) }],
+      description: call.description,
+      mimeType: "application/json",
+      serviceName: s.serviceName,
+      tags: s.tags,
+      extensions,
+    };
   }
   return out;
 }
@@ -97,7 +112,7 @@ async function recordFunnel(c: C, paid: Paid, status: number, charged: boolean, 
 export function createPlatform(services: Service[], opts: { paywall: boolean }) {
   const app = new Hono<{ Bindings: Env }>();
   const PAID = new Map<string, Paid>();
-  for (const s of services) for (const call of s.calls) PAID.set(routeKey(call.method, call.path), { service: s.id, call });
+  for (const r of paidRoutes(services)) PAID.set(r.key, { service: r.service.id, call: r.call });
   const paidOf = (c: C) => PAID.get(routeKey(c.req.method, c.req.path));
   const memory = services.find((s) => s.id === "memory");
 
@@ -225,17 +240,16 @@ export function createPlatform(services: Service[], opts: { paywall: boolean }) 
 
   // ---- paid: identity and one-payment-one-call are enforced here, for every service ------------
   // Errors return 4xx, which the x402 middleware does not settle. Bad requests cost nothing.
-  for (const s of services) {
-    for (const call of s.calls) {
-      app.on(call.method, call.path, async (c) => {
-        const wallet = payerOf(c);
-        if (!wallet) return c.json({ error: "evm_payer_required" }, 400);
-        // One signed payment buys one call. A reused payment gets 409 (never settled).
-        const nonce = paymentNonce(c);
-        if (nonce && !(await walletStub(c.env, wallet).claimPayment(nonce))) return c.json({ error: "payment_reused" }, 409);
-        return call.handler(c, wallet);
-      });
-    }
+  for (const { key, call } of paidRoutes(services)) {
+    const path = key.slice(key.indexOf(" ") + 1);
+    app.on(call.method, path, async (c) => {
+      const wallet = payerOf(c);
+      if (!wallet) return c.json({ error: "evm_payer_required" }, 400);
+      // One signed payment buys one call. A reused payment gets 409 (never settled).
+      const nonce = paymentNonce(c);
+      if (nonce && !(await walletStub(c.env, wallet).claimPayment(nonce))) return c.json({ error: "payment_reused" }, 409);
+      return call.handler(c, wallet);
+    });
   }
 
   app.onError((err, c) => {

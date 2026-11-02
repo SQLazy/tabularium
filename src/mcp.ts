@@ -7,10 +7,13 @@
 //   - client retries with params._meta["x402/payment"] (a PaymentPayload) -> sent on as the PAYMENT-SIGNATURE header
 //   - the route's PAYMENT-RESPONSE header comes back as result._meta["x402/payment-response"]
 //
-// The PaymentRequired is the HTTP route's own, unchanged (its resource is the route URL), so the payload a client
-// signs is exactly what the route verifies. Tool names match tabularium-mcp, so one prompt works with either.
-//
-// No dependencies: this file uses only web-standard Request/Response, so it runs (and is tested) outside Workers.
+// Each paid tool has its own paid route, MCP_PATH/<tool name> (registered by the platform with the same price and
+// handler as the HTTP call), whose Bazaar declaration is type "mcp". The facilitator catalogs what the paying client
+// echoes, and the route only accepts an echo of its own declaration, so a payment made through /mcp lists the TOOL
+// in the Bazaar, not the HTTP route. Its PaymentRequired is the route's own except resource.url, which points at
+// this endpoint (the Bazaar probes tools/call there); the route matches payments on `accepted`, not on resource.
+// Tool names match tabularium-mcp, so one prompt works with either.
+import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import { callInput, type PaidCall, type Service } from "./core/service";
 import { PAYMENT_HEADER } from "./core/identity";
 import { TEST_HEADER } from "./core/funnel";
@@ -39,6 +42,27 @@ export interface McpTool {
   query: string[];
   /** Set for paid tools only. */
   price?: string;
+  /** Paid tools only: the tool's own paid route (MCP_PATH/<name>) and its Bazaar declaration (type "mcp"). */
+  route?: string;
+  discovery?: Record<string, unknown>;
+}
+
+/** The paid route behind one MCP tool. */
+export const mcpRoutePath = (name: string) => `${MCP_PATH}/${name}`;
+
+/** Bazaar declaration for a paid tool. The example comes from the HTTP call's own (it must draw a 402 unpaid). */
+function toolDiscovery(name: string, call: PaidCall, inputSchema: Json) {
+  const info = ((call.discovery as { bazaar?: { info?: Json } })?.bazaar?.info ?? {}) as { input?: Json; output?: Json };
+  const example = (info.input?.body ?? info.input?.queryParams ?? {}) as Json;
+  const output = info.output?.example as Json | undefined;
+  return declareDiscoveryExtension({
+    toolName: name,
+    description: call.description,
+    transport: "streamable-http",
+    inputSchema,
+    example,
+    ...(output ? { output: { example: output } } : {}),
+  } as never) as Record<string, unknown>;
 }
 
 const toolName = (s: string) => s.toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 64);
@@ -77,8 +101,9 @@ export function mcpTools(services: Service[]): McpTool[] {
       const { schema, query } = callInput(call);
       const summary = (call.openapi as { summary?: string }).summary ?? "";
       const settles = call.upfront ? "Settles before it runs (a free check refuses a call that would fail)." : "Charged only if it succeeds.";
+      const name = toolName(prefixOf(s) + call.name);
       tools.push({
-        name: toolName(prefixOf(s) + call.name),
+        name,
         title: `${s.serviceName}: ${call.name}`.slice(0, 100),
         description:
           `Paid (${call.price} USDC on Base, x402). ${summary}. ${call.description}. ${settles} ` +
@@ -89,6 +114,8 @@ export function mcpTools(services: Service[]): McpTool[] {
         path: call.path,
         query,
         price: call.price,
+        route: mcpRoutePath(name),
+        discovery: toolDiscovery(name, call, schema),
       });
     }
   }
@@ -216,7 +243,8 @@ async function callTool(tool: McpTool, p: Json, outer: Request, opts: McpOptions
   for (const k of Object.keys(args)) if (!(k in props)) return toolError(`unknown argument: ${k}`);
   for (const k of (tool.inputSchema.required ?? []) as string[]) if (args[k] === undefined) return toolError(`missing argument: ${k}`);
 
-  const url = new URL(tool.path, new URL(outer.url).origin);
+  const origin = new URL(outer.url).origin;
+  const url = new URL(tool.route ?? tool.path, origin);
   const body: Json = {};
   for (const [k, v] of Object.entries(args)) {
     if (v === undefined || v === null) continue;
@@ -242,8 +270,13 @@ async function callTool(tool: McpTool, p: Json, outer: Request, opts: McpOptions
 
   const receipt = unb64json(res.headers.get("PAYMENT-RESPONSE"));
   const meta = receipt ? { _meta: { [RECEIPT_META]: receipt } } : {};
-  const required = res.status === 402 ? unb64json(res.headers.get("PAYMENT-REQUIRED")) : null;
-  if (required) return { isError: true, structuredContent: required, content: text(required), ...meta };
+  let required = res.status === 402 ? unb64json(res.headers.get("PAYMENT-REQUIRED")) : null;
+  if (required) {
+    // The Bazaar keys an MCP tool on (resource.url, toolName) and probes tools/call at resource.url: this endpoint.
+    const resource = (required.resource && typeof required.resource === "object" ? required.resource : {}) as Json;
+    required = { ...required, resource: { ...resource, url: origin + MCP_PATH } };
+    return { isError: true, structuredContent: required, content: text(required), ...meta };
+  }
 
   const raw = await res.text();
   let data: unknown = raw;

@@ -88,6 +88,20 @@ check("llms.txt is free and shows the live prices", llms.status === 200 && menu.
   const probes = menu.json.services.flatMap((s) => s.calls.map((c) => c.call.split(" ")));
   const got = await Promise.all(probes.map(async ([method, path]) => (await tfetch(`${BASE}${path}`, { method })).status));
   check(`bare probes of all ${probes.length} paid routes get 402`, probes.length >= 5 && got.every((s) => s === 402), got.join(","));
+
+  // Each paid MCP tool has its own paid route (/mcp/<tool>). It must sit behind the paywall like the HTTP routes:
+  // if it ever did not, an unsigned header naming any wallet would be served as that wallet, for free.
+  const list = await (await tfetch(`${BASE}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }) })).json();
+  const paidTools = (list.result?.tools ?? []).filter((t) => /^Paid /.test(t.description));
+  const forged = btoa(JSON.stringify({ x402Version: 2, payload: { authorization: { from: "0x" + "be".repeat(20), nonce: "0x" + "77".repeat(32) } } }));
+  const mcpGot = await Promise.all(
+    paidTools.map(async (t) => {
+      const method = t.annotations?.readOnlyHint ? "GET" : "POST";
+      const init = { method, headers: { "PAYMENT-SIGNATURE": forged, ...(method === "POST" ? { "content-type": "application/json" } : {}) }, ...(method === "POST" ? { body: "{}" } : {}) };
+      return (await tfetch(`${BASE}/mcp/${t.name}`, init)).status;
+    }),
+  );
+  check(`all ${paidTools.length} MCP tool routes refuse an unsigned payment (402)`, paidTools.length === probes.length && mcpGot.every((s) => s === 402), mcpGot.join(","));
 }
 
 let r = await j(await tfetch(`${BASE}/write`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: "a", value: "x" }) }));

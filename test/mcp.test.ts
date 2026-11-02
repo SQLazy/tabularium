@@ -27,7 +27,8 @@ const SERVICES: Service[] = [
   }),
 ];
 const tools = mcpTools(SERVICES);
-const PAID = new Set(["/write", "/read", "/renew", "/snapshot/fetch"]);
+// Paid tools forward to their own paid route, /mcp/<tool name> (see mcpRoutePath).
+const PAID = new Set(["/mcp/tabularium_write", "/mcp/tabularium_read", "/mcp/tabularium_renew", "/mcp/tabularium_snapshot_fetch"]);
 const b64 = (v: unknown) => btoa(JSON.stringify(v));
 const unb64 = (s: string) => JSON.parse(atob(s));
 const PAYLOAD = { x402Version: 2, accepted: { scheme: "exact", network: "eip155:8453" }, payload: { signature: "0xsig", authorization: { from: "0x" + "ab".repeat(20), nonce: "0x" + "01".repeat(32) } } };
@@ -89,7 +90,9 @@ test("an unpaid paid call returns the route's PaymentRequired as an error result
   const res = r.body.result;
   assert.strictEqual(res.isError, true);
   assert.strictEqual(res.structuredContent.x402Version, 2);
-  assert.strictEqual(res.structuredContent.resource.url, "https://tabularium.example/write");
+  // The route's PaymentRequired, with resource.url pointing at the MCP endpoint (the Bazaar probes tools/call there).
+  assert.strictEqual(res.structuredContent.resource.url, "https://tabularium.example/mcp");
+  assert.strictEqual(r.seen[0].url.pathname, "/mcp/tabularium_write");
   assert.deepEqual(JSON.parse(res.content[0].text), res.structuredContent);
   assert.strictEqual(r.seen[0].headers.get("PAYMENT-SIGNATURE"), null);
 });
@@ -98,6 +101,7 @@ test("a paid retry sends the payload as PAYMENT-SIGNATURE and returns the receip
   const r = await rpc(call("tabularium_write", { key: "a/b", value: "v", idempotency_key: "i1" }, { "x402/payment": PAYLOAD }));
   const [s] = r.seen;
   assert.strictEqual(s.method, "POST");
+  assert.strictEqual(s.url.pathname, "/mcp/tabularium_write");
   assert.deepEqual(unb64(s.headers.get("PAYMENT-SIGNATURE")!), PAYLOAD);
   assert.deepEqual(JSON.parse(s.body), { key: "a/b", value: "v", idempotency_key: "i1" });
   assert.strictEqual(s.headers.get("user-agent"), REMOTE_UA);
@@ -169,4 +173,19 @@ test("batches from older clients still work", async () => {
   const r = await rpc([{ jsonrpc: "2.0", id: 1, method: "ping" }, { jsonrpc: "2.0", method: "notifications/initialized" }, { jsonrpc: "2.0", id: 2, method: "tools/list" }]);
   assert.strictEqual(r.body.length, 2);
   assert.strictEqual(r.body[1].result.tools.length, 6);
+});
+
+test("each paid tool has its own route and a valid type-mcp Bazaar declaration; free tools have neither", () => {
+  for (const t of tools) {
+    if (!t.price) {
+      assert.strictEqual(t.route, undefined);
+      continue;
+    }
+    assert.strictEqual(t.route, "/mcp/" + t.name);
+    const input = (t.discovery as any).bazaar.info.input;
+    assert.strictEqual(input.type, "mcp");
+    assert.strictEqual(input.toolName, t.name);
+    assert.strictEqual(input.transport, "streamable-http");
+    assert.deepEqual(input.inputSchema, t.inputSchema);
+  }
 });
