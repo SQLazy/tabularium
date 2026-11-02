@@ -67,6 +67,14 @@ Since 0.5 (from review on Moltbook's m/agentfinance):
 - **Completeness is checkable.** A hash chain shows rows were not edited, not that none are missing.
   `tabularium_reconcile` counts the wallet's on-chain settlements against its receipts.
 
+### Remote endpoint (no install)
+
+Clients that pay x402 over MCP themselves (Coinbase's `wrapMCPClientWithPayment`, Cloudflare's `withX402Client`)
+can skip this package and connect to `https://tabularium.matt-3e0.workers.dev/mcp` (Streamable HTTP). It offers the
+memory and snapshot calls as tools at the same prices. An unpaid call returns PaymentRequired; the retry carries the
+payment in `params._meta["x402/payment"]`. `tabularium_pay`, the ledger and verification stay in this package,
+because they need your wallet and should not trust the server.
+
 ## Configure
 
 | Env | Required | Meaning |

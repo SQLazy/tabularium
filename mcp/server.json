@@ -10,6 +10,12 @@
   },
   "websiteUrl": "https://github.com/SQLazy/tabularium/tree/main/mcp#readme",
   "version": "0.5.3",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://tabularium.matt-3e0.workers.dev/mcp"
+    }
+  ],
   "packages": [
     {
       "registryType": "npm",
