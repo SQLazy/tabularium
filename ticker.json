@@ -1,59 +1,59 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-03T00:35:09.000Z",
+  "asOf": "2026-11-03T01:16:23.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53395182,
-    "toBlock": 53438381
+    "fromBlock": 53396419,
+    "toBlock": 53439618
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 5089.35,
-  "payments": 161529,
-  "payers": 2062,
-  "activeSellers": 719,
+  "usd": 5181.92,
+  "payments": 165615,
+  "payers": 2032,
+  "activeSellers": 717,
   "listedSellers": 1790,
   "biggest": {
     "usd": 1000,
     "seller": "Crypto Analytics Dashboards"
   },
   "perHourUsd": [
-    88.91,
-    142.38,
-    134.2,
-    113.68,
-    102.64,
-    113.21,
-    126.99,
-    128.65,
-    146.93,
-    217.19,
-    173.99,
-    141.67,
-    199.47,
-    167.83,
-    179.58,
-    1178.43,
-    179.91,
-    169.21,
-    208.01,
-    217.58,
-    238.65,
-    219.26,
-    190.75,
-    310.23
+    140.67,
+    101.72,
+    139.47,
+    97.4,
+    116.97,
+    126.05,
+    123.11,
+    138.1,
+    211.48,
+    169.82,
+    164.51,
+    215.35,
+    130.36,
+    178.21,
+    194.88,
+    1171.23,
+    161.54,
+    187.35,
+    236.36,
+    223.84,
+    247.7,
+    177.68,
+    324.98,
+    203.15
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1364.5,
-      "payments": 627
+      "usd": 1382.5,
+      "payments": 628
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1255.12,
-      "payments": 62769
+      "usd": 1312.03,
+      "payments": 65616
     },
     {
       "seller": "Crypto Analytics Dashboards",
@@ -64,8 +64,8 @@
     {
       "seller": "Research note - Section template",
       "host": "market.datapackvibe.com",
-      "usd": 602.85,
-      "payments": 60285
+      "usd": 613.92,
+      "payments": 61392
     },
     {
       "seller": "Laso Finance",
@@ -76,14 +76,14 @@
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 90.94,
-      "payments": 2196
+      "usd": 90.84,
+      "payments": 2176
     },
     {
       "seller": "StableEnrich",
       "host": "stableenrich.dev",
-      "usd": 72.16,
-      "payments": 4528
+      "usd": 72.23,
+      "payments": 4545
     },
     {
       "seller": "BotPay NFT Mint",
@@ -100,9 +100,9 @@
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 43.71,
-      "payments": 2174
+      "usd": 43.03,
+      "payments": 2113
     }
   ],
-  "tookMs": 246036
+  "tookMs": 251157
 }
