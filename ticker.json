@@ -1,108 +1,108 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-03T05:21:57.000Z",
+  "asOf": "2026-11-03T13:15:33.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53403786,
-    "toBlock": 53446985
+    "fromBlock": 53417994,
+    "toBlock": 53461193
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 5572.74,
-  "payments": 188086,
-  "payers": 1878,
-  "activeSellers": 647,
+  "usd": 6584.93,
+  "payments": 244638,
+  "payers": 2069,
+  "activeSellers": 602,
   "listedSellers": 1823,
   "biggest": {
     "usd": 1000,
     "seller": "Crypto Analytics Dashboards"
   },
   "perHourUsd": [
-    110.07,
-    130.37,
-    125.44,
-    136.98,
-    228.99,
-    155.97,
-    161.67,
-    212.62,
-    126.58,
-    191.56,
-    1188.53,
-    169.91,
-    165.77,
-    194.52,
-    232.3,
-    240.36,
-    228.45,
-    183.25,
-    318.92,
-    211.34,
-    240.19,
-    216.18,
-    209.98,
-    192.79
+    129.36,
+    175.68,
+    197.79,
+    1172.2,
+    159.49,
+    188.15,
+    236.67,
+    221.99,
+    234.33,
+    191.83,
+    327.12,
+    191.23,
+    252.24,
+    207.25,
+    222.21,
+    192.63,
+    239.51,
+    238.87,
+    233.71,
+    504.76,
+    250.16,
+    259.66,
+    246.55,
+    311.56
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1654.39,
-      "payments": 82740
+      "usd": 2401.77,
+      "payments": 120120
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1381,
-      "payments": 634
+      "usd": 1287.6,
+      "payments": 601
     },
     {
       "seller": "Crypto Analytics Dashboards",
       "host": "www.blockchainiq.co",
-      "usd": 1002.05,
-      "payments": 3
+      "usd": 1002.34,
+      "payments": 6
     },
     {
       "seller": "Email Domain DNS Readiness",
       "host": "market.datapackvibe.com",
-      "usd": 672.54,
-      "payments": 67254
+      "usd": 837.71,
+      "payments": 83771
+    },
+    {
+      "seller": "Ausca Browser Session",
+      "host": "ausca.com",
+      "usd": 220,
+      "payments": 1
     },
     {
       "seller": "Laso Finance",
       "host": "laso.finance",
       "usd": 113.51,
-      "payments": 17
+      "payments": 16
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 90.8,
-      "payments": 2168
+      "usd": 74.19,
+      "payments": 2844
     },
     {
       "seller": "StableEnrich",
       "host": "stableenrich.dev",
-      "usd": 71.66,
-      "payments": 4554
-    },
-    {
-      "seller": "Bitrefill",
-      "host": "api.bitrefill.com",
-      "usd": 58.97,
-      "payments": 29
+      "usd": 70.36,
+      "payments": 4381
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 42.95,
-      "payments": 2134
+      "usd": 53.15,
+      "payments": 4003
     },
     {
-      "seller": "win.oneshotagent.com",
-      "host": "win.oneshotagent.com",
-      "usd": 40.46,
-      "payments": 3175
+      "seller": "keyring-agent.blockchhub.link",
+      "host": "keyring-agent.blockchhub.link",
+      "usd": 47.5,
+      "payments": 950
     }
   ],
-  "tookMs": 604815
+  "tookMs": 325577
 }
