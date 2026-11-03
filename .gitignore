@@ -5,5 +5,5 @@ node_modules
 .testnet-wallets.json
 .secrets/
 mcp/verify.mjs.bak
-CLAUDE.md
+/CLAUDE.md
 launch/
