@@ -27,9 +27,14 @@ const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
 const cmp = (a, b) => a.split(".").map(Number).reduce((r, n, i) => r || n - b.split(".").map(Number)[i], 0);
 if (cmp(version, pkg.version) <= 0) throw new Error(`${version} is not above the current ${pkg.version}`);
 
-// The two files that must agree: the npm package and the MCP Registry entry (its version and its npm package's).
+// The files that must agree: the npm package, its published lockfile, and the MCP Registry entry.
 pkg.version = version;
 writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+const lockPath = "mcp/npm-shrinkwrap.json"; // shipped in the package, so npx installs exactly these versions
+const lock = JSON.parse(readFileSync(lockPath, "utf8"));
+lock.version = version;
+lock.packages[""].version = version;
+writeFileSync(lockPath, JSON.stringify(lock, null, 2) + "\n");
 const srvPath = "mcp/server.json";
 const srv = JSON.parse(readFileSync(srvPath, "utf8"));
 srv.version = version;
@@ -40,10 +45,10 @@ console.log(`set ${pkg.name} and server.json to ${version}`);
 run("npm test", "mcp");
 run("npx vitest run", ".");
 if (dry) {
-  console.log("dry run: files bumped and tests passed; nothing committed. Revert with: git checkout mcp/package.json mcp/server.json");
+  console.log("dry run: files bumped and tests passed; nothing committed. Revert with: git checkout mcp/package.json mcp/npm-shrinkwrap.json mcp/server.json");
   process.exit(0);
 }
-git("add", pkgPath, srvPath);
+git("add", pkgPath, lockPath, srvPath);
 git("commit", "-m", `tabularium-mcp ${version}`, "-m", "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>");
 git("tag", "-a", `mcp-v${version}`, "-m", `tabularium-mcp ${version}`);
 git("push", "origin", "main");

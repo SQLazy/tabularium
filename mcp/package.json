@@ -13,7 +13,8 @@
     "ledger.mjs",
     "verify.mjs",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "npm-shrinkwrap.json"
   ],
   "engines": {
     "node": ">=20"
