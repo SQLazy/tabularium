@@ -1,71 +1,71 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-04T13:15:09.000Z",
+  "asOf": "2026-11-04T15:16:25.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53461182,
-    "toBlock": 53504381
+    "fromBlock": 53464820,
+    "toBlock": 53508019
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 5893.47,
-  "payments": 233497,
-  "payers": 2123,
-  "activeSellers": 828,
+  "usd": 5106.79,
+  "payments": 196903,
+  "payers": 1648,
+  "activeSellers": 812,
   "listedSellers": 1836,
   "biggest": {
     "usd": 220,
     "seller": "Ausca Browser Session"
   },
   "perHourUsd": [
-    1094.86,
-    222.17,
-    156.67,
-    401.75,
-    295.3,
-    150.64,
-    239.3,
-    175.27,
-    159.24,
-    409.99,
-    225.38,
-    226.25,
-    163.7,
-    134.37,
-    105.98,
-    155.28,
-    154.62,
-    196.56,
-    176.13,
-    172.79,
-    213.93,
-    243.56,
-    210.35,
-    209.39
+    155.81,
+    402.43,
+    295.5,
+    151.42,
+    239.26,
+    174.16,
+    163.37,
+    407.25,
+    227.76,
+    224.87,
+    160.43,
+    134.45,
+    111.51,
+    150.25,
+    161.85,
+    189.77,
+    175.76,
+    173.78,
+    213.9,
+    244.07,
+    209.63,
+    210.6,
+    287.16,
+    241.8
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 2868.75,
-      "payments": 143903
+      "usd": 2129.37,
+      "payments": 106977
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1230.6,
-      "payments": 560
+      "usd": 1231.8,
+      "payments": 558
     },
     {
       "seller": "Release notes - Word frequencies",
       "host": "market.datapackvibe.com",
-      "usd": 619.76,
-      "payments": 61976
+      "usd": 631.53,
+      "payments": 63153
     },
     {
       "seller": "Laso Finance",
       "host": "laso.finance",
       "usd": 274.02,
-      "payments": 19
+      "payments": 20
     },
     {
       "seller": "Ausca Browser Session",
@@ -74,22 +74,16 @@
       "payments": 1
     },
     {
-      "seller": "BotPay NFT Mint",
-      "host": "api.botpay.network",
-      "usd": 64.56,
-      "payments": 646
-    },
-    {
       "seller": "CheapTokens AI Inference",
       "host": "cheaptokens.ai",
-      "usd": 47.43,
+      "usd": 47.42,
       "payments": 22
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 45.55,
-      "payments": 911
+      "usd": 45.8,
+      "payments": 916
     },
     {
       "seller": "Apify",
@@ -98,11 +92,17 @@
       "payments": 9
     },
     {
+      "seller": "BotPay NFT Mint",
+      "host": "api.botpay.network",
+      "usd": 32.56,
+      "payments": 326
+    },
+    {
       "seller": "Trust Center Directory API",
       "host": "synergetic.solutions",
       "usd": 31.02,
       "payments": 6
     }
   ],
-  "tookMs": 335442
+  "tookMs": 370875
 }
