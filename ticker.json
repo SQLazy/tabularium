@@ -1,15 +1,15 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-04T12:21:29.000Z",
+  "asOf": "2026-11-04T13:15:09.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53459572,
-    "toBlock": 53502771
+    "fromBlock": 53461182,
+    "toBlock": 53504381
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 5982.94,
-  "payments": 237730,
-  "payers": 2148,
+  "usd": 5893.47,
+  "payments": 233497,
+  "payers": 2123,
   "activeSellers": 828,
   "listedSellers": 1836,
   "biggest": {
@@ -17,49 +17,49 @@
     "seller": "Ausca Browser Session"
   },
   "perHourUsd": [
-    393.52,
-    1011.88,
-    207.82,
-    170.35,
-    390.4,
-    293.18,
-    151.74,
-    243.54,
-    167.69,
-    173.56,
-    414.48,
-    240.56,
-    194.23,
-    171.83,
-    124.7,
-    114.1,
-    158.93,
-    160.41,
-    178.87,
-    175.75,
-    179.34,
-    215.02,
-    272.02,
-    179.02
+    1094.86,
+    222.17,
+    156.67,
+    401.75,
+    295.3,
+    150.64,
+    239.3,
+    175.27,
+    159.24,
+    409.99,
+    225.38,
+    226.25,
+    163.7,
+    134.37,
+    105.98,
+    155.28,
+    154.62,
+    196.56,
+    176.13,
+    172.79,
+    213.93,
+    243.56,
+    210.35,
+    209.39
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 2958.62,
-      "payments": 148365
+      "usd": 2868.75,
+      "payments": 143903
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1237.1,
+      "usd": 1230.6,
       "payments": 560
     },
     {
       "seller": "Release notes - Word frequencies",
       "host": "market.datapackvibe.com",
-      "usd": 614.11,
-      "payments": 61411
+      "usd": 619.76,
+      "payments": 61976
     },
     {
       "seller": "Laso Finance",
@@ -88,8 +88,8 @@
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 45.4,
-      "payments": 908
+      "usd": 45.55,
+      "payments": 911
     },
     {
       "seller": "Apify",
@@ -98,11 +98,11 @@
       "payments": 9
     },
     {
-      "seller": "BlockRun.AI",
-      "host": "blockrun.ai",
-      "usd": 31.44,
-      "payments": 1359
+      "seller": "Trust Center Directory API",
+      "host": "synergetic.solutions",
+      "usd": 31.02,
+      "payments": 6
     }
   ],
-  "tookMs": 260794
+  "tookMs": 335442
 }
