@@ -1,108 +1,108 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-05T14:17:21.000Z",
+  "asOf": "2026-11-05T16:19:13.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53506248,
-    "toBlock": 53549447
+    "fromBlock": 53509904,
+    "toBlock": 53553103
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 4275.09,
-  "payments": 145501,
-  "payers": 1938,
-  "activeSellers": 541,
+  "usd": 4064.19,
+  "payments": 131108,
+  "payers": 1896,
+  "activeSellers": 532,
   "listedSellers": 1844,
   "biggest": {
     "usd": 150,
     "seller": "Laso Finance"
   },
   "perHourUsd": [
-    239.5,
-    241.42,
-    258.4,
-    177.44,
-    277.14,
-    182.27,
-    223.29,
-    164.16,
-    170.19,
-    167.05,
-    183.95,
-    175.41,
-    131.08,
-    122.6,
-    136.61,
-    160.97,
-    180.32,
-    164.61,
-    132.55,
-    291.42,
-    111.6,
-    132.55,
-    143.82,
-    106.75
+    260.98,
+    176.02,
+    275.95,
+    181.96,
+    223.55,
+    162.75,
+    169.67,
+    169.03,
+    182.6,
+    178.87,
+    127.23,
+    121.47,
+    139.03,
+    167.5,
+    171.67,
+    166.1,
+    131.35,
+    293.83,
+    117.37,
+    126.76,
+    145.62,
+    102.15,
+    134.61,
+    138.12
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 1702.67,
-      "payments": 86874
+      "usd": 1595.05,
+      "payments": 81570
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 1219,
-      "payments": 560
+      "usd": 1239.7,
+      "payments": 562
     },
     {
       "seller": "Research note - Section template",
       "host": "market.datapackvibe.com",
-      "usd": 306.44,
-      "payments": 30644
+      "usd": 217.93,
+      "payments": 21793
     },
     {
       "seller": "Laso Finance",
       "host": "laso.finance",
       "usd": 161.51,
-      "payments": 15
+      "payments": 13
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 94.68,
-      "payments": 1199
+      "usd": 98.49,
+      "payments": 1230
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 68.45,
-      "payments": 3432
-    },
-    {
-      "seller": "CheapTokens AI Inference",
-      "host": "cheaptokens.ai",
-      "usd": 59.05,
-      "payments": 57
+      "usd": 72.59,
+      "payments": 3638
     },
     {
       "seller": "StableEnrich",
       "host": "stableenrich.dev",
-      "usd": 46.61,
-      "payments": 1677
+      "usd": 47.47,
+      "payments": 1722
     },
     {
       "seller": "southpow.media",
       "host": "southpow.media",
-      "usd": 41.9,
-      "payments": 1012
+      "usd": 41.89,
+      "payments": 1011
     },
     {
-      "seller": "win.oneshotagent.com",
-      "host": "win.oneshotagent.com",
-      "usd": 39.98,
-      "payments": 2505
+      "seller": "vAPI x402 decoder",
+      "host": "api-staging.vapinetwork.ai",
+      "usd": 41,
+      "payments": 41
+    },
+    {
+      "seller": "CheapTokens AI Inference",
+      "host": "cheaptokens.ai",
+      "usd": 36.79,
+      "payments": 34
     }
   ],
-  "tookMs": 336280
+  "tookMs": 204236
 }
