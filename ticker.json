@@ -1,89 +1,83 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-06T05:16:17.000Z",
+  "asOf": "2026-11-06T06:24:47.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53715808,
-    "toBlock": 53759007
+    "fromBlock": 53736359,
+    "toBlock": 53779558
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 410.85,
-  "payments": 16225,
-  "payers": 460,
-  "activeSellers": 172,
+  "usd": 317.76,
+  "payments": 13326,
+  "payers": 448,
+  "activeSellers": 128,
   "listedSellers": 1844,
   "biggest": {
     "usd": 12,
     "seller": "x402.dtelecom.org"
   },
   "perHourUsd": [
-    14.61,
-    21.94,
-    35.12,
-    14.59,
-    17.63,
-    16.11,
-    15.23,
-    29.42,
-    13.19,
-    16.91,
-    16.29,
-    16.45,
-    23.56,
-    14.77,
-    10,
-    20.15,
-    13.62,
-    8.27,
-    9.34,
-    16.93,
-    17.33,
-    14.81,
-    23.44,
-    11.12
+    17.05,
+    20.73,
+    13.55,
+    14.22,
+    17.15,
+    11.75,
+    8.42,
+    17.98,
+    9.95,
+    20.19,
+    10.78,
+    23.8,
+    9.62,
+    9.42,
+    12.38,
+    7.15,
+    9,
+    7.33,
+    6.22,
+    9.28,
+    12.6,
+    32.35,
+    8.93,
+    7.92
   ],
   "top": [
     {
-      "seller": "AX1 Console",
-      "host": "www.ax1.vc",
-      "usd": 134.91,
-      "payments": 6936
-    },
-    {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 120,
-      "payments": 40
+      "usd": 95,
+      "payments": 36
+    },
+    {
+      "seller": "AX1 Console",
+      "host": "www.ax1.vc",
+      "usd": 83.36,
+      "payments": 4353
     },
     {
       "seller": "api.zerion.io",
       "host": "api.zerion.io",
-      "usd": 67.08,
-      "payments": 6708
+      "usd": 67.47,
+      "payments": 6747
     },
     {
       "seller": "x402.orthogonal.com",
       "host": "x402.orthogonal.com",
-      "usd": 22.16,
-      "payments": 554
-    },
-    {
-      "seller": "Clash of Coins",
-      "host": "x402.clashofcoins.com",
-      "usd": 7.64,
-      "payments": 382
+      "usd": 17.88,
+      "payments": 447
     },
     {
       "seller": "vAPI x402 decoder",
       "host": "api-staging.vapinetwork.ai",
-      "usd": 7,
-      "payments": 7
+      "usd": 9,
+      "payments": 9
     },
     {
-      "seller": "keyring-agent.blockchhub.link",
-      "host": "keyring-agent.blockchhub.link",
-      "usd": 6.3,
-      "payments": 126
+      "seller": "Clash of Coins",
+      "host": "x402.clashofcoins.com",
+      "usd": 7.4,
+      "payments": 370
     },
     {
       "seller": "BotPay NFT Mint",
@@ -92,17 +86,23 @@
       "payments": 57
     },
     {
-      "seller": "StableStudio",
-      "host": "stablestudio.dev",
-      "usd": 5.52,
-      "payments": 40
+      "seller": "keyring-agent.blockchhub.link",
+      "host": "keyring-agent.blockchhub.link",
+      "usd": 4.8,
+      "payments": 96
     },
     {
       "seller": "api.messari.io",
       "host": "api.messari.io",
       "usd": 3.75,
       "payments": 15
+    },
+    {
+      "seller": "AiSpace Venice",
+      "host": "x402.aispace.bot",
+      "usd": 2.6,
+      "payments": 2
     }
   ],
-  "tookMs": 34292
+  "tookMs": 52878
 }
