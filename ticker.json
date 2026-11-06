@@ -1,71 +1,71 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-06T09:17:21.000Z",
+  "asOf": "2026-11-06T10:14:59.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53788128,
-    "toBlock": 53831327
+    "fromBlock": 53805421,
+    "toBlock": 53848620
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 365.76,
-  "payments": 15347,
-  "payers": 467,
-  "activeSellers": 136,
+  "usd": 367.69,
+  "payments": 14557,
+  "payers": 485,
+  "activeSellers": 127,
   "listedSellers": 1952,
   "biggest": {
     "usd": 13.08,
     "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    22.09,
-    18.67,
-    14.23,
-    13.79,
-    9.49,
-    7.72,
-    9.1,
-    10.57,
-    14.67,
-    10.3,
-    14.06,
-    11.07,
-    31.81,
-    11.51,
-    11.93,
-    12.76,
-    18.75,
-    16.57,
-    7.93,
-    9.71,
-    10.78,
-    42.62,
-    19.59,
-    16.04
+    14.94,
+    8.95,
+    32.97,
+    10.69,
+    11.03,
+    13.11,
+    14.12,
+    17.02,
+    13.97,
+    9.12,
+    9.25,
+    20.67,
+    42.24,
+    15.84,
+    19.72,
+    12.87,
+    9.65,
+    10.19,
+    10.62,
+    6.8,
+    9.12,
+    10.46,
+    11.37,
+    32.95
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 119,
-      "payments": 51
+      "usd": 112.8,
+      "payments": 52
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 83.03,
-      "payments": 4337
+      "usd": 92.44,
+      "payments": 4807
     },
     {
       "seller": "api.zerion.io",
       "host": "api.zerion.io",
-      "usd": 67.7,
-      "payments": 6770
+      "usd": 46.78,
+      "payments": 4678
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 25.14,
-      "payments": 2
+      "usd": 35.24,
+      "payments": 3
     },
     {
       "seller": "BotPay NFT Mint",
@@ -76,33 +76,33 @@
     {
       "seller": "vAPI x402 decoder",
       "host": "api-staging.vapinetwork.ai",
-      "usd": 11,
-      "payments": 11
-    },
-    {
-      "seller": "Clash of Coins",
-      "host": "x402.clashofcoins.com",
-      "usd": 7.42,
-      "payments": 371
-    },
-    {
-      "seller": "api.messari.io",
-      "host": "api.messari.io",
-      "usd": 4,
-      "payments": 16
-    },
-    {
-      "seller": "BlockRun.AI",
-      "host": "blockrun.ai",
-      "usd": 3.81,
-      "payments": 185
+      "usd": 14,
+      "payments": 14
     },
     {
       "seller": "Otto AI",
       "host": "x402.ottoai.services",
-      "usd": 3.46,
-      "payments": 694
+      "usd": 8.11,
+      "payments": 1625
+    },
+    {
+      "seller": "Clash of Coins",
+      "host": "x402.clashofcoins.com",
+      "usd": 7.38,
+      "payments": 369
+    },
+    {
+      "seller": "Base nonce, account nonce",
+      "host": "agent-data-tools.revmesh2074.workers.dev",
+      "usd": 4.48,
+      "payments": 456
+    },
+    {
+      "seller": "X Pay",
+      "host": "www.api-xpay.com",
+      "usd": 3.89,
+      "payments": 778
     }
   ],
-  "tookMs": 43514
+  "tookMs": 67923
 }
