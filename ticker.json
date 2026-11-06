@@ -1,71 +1,83 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-06T18:19:25.000Z",
+  "asOf": "2026-11-06T19:13:14.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53950749,
-    "toBlock": 53993948
+    "fromBlock": 53966897,
+    "toBlock": 54010096
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 553.15,
-  "payments": 14626,
+  "usd": 503.24,
+  "payments": 13581,
   "payers": 440,
-  "activeSellers": 114,
+  "activeSellers": 156,
   "listedSellers": 1952,
   "biggest": {
-    "usd": 50.48,
+    "usd": 28.54,
     "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    14.26,
-    13.89,
-    64.47,
-    14.04,
-    21.3,
-    10.64,
-    32.55,
-    28.81,
-    9.56,
-    11.37,
-    33.81,
-    12.94,
-    19.36,
-    14.99,
-    10.81,
-    44.16,
-    18.29,
-    28.24,
+    11.43,
+    33.8,
+    12.91,
+    19.44,
+    14.88,
+    10.85,
+    44.08,
+    18.32,
+    28.28,
     12.37,
-    40.85,
-    25.65,
-    27.63,
-    13.21,
-    29.95
+    40.56,
+    25.97,
+    27.57,
+    13.28,
+    29.97,
+    7.31,
+    9.62,
+    37.25,
+    11.07,
+    31.33,
+    10.22,
+    16.16,
+    9.82,
+    26.73
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 149.9,
-      "payments": 72
+      "usd": 148.9,
+      "payments": 69
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 149.43,
+      "usd": 109.67,
       "payments": 10
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 106.63,
-      "payments": 5525
+      "usd": 79.57,
+      "payments": 4168
     },
     {
       "seller": "api.zerion.io",
       "host": "api.zerion.io",
-      "usd": 61.36,
-      "payments": 6136
+      "usd": 60.74,
+      "payments": 6074
+    },
+    {
+      "seller": "win.oneshotagent.com",
+      "host": "win.oneshotagent.com",
+      "usd": 18.69,
+      "payments": 600
+    },
+    {
+      "seller": "CheapTokens AI Inference",
+      "host": "cheaptokens.ai",
+      "usd": 18,
+      "payments": 18
     },
     {
       "seller": "vAPI x402 decoder",
@@ -74,35 +86,23 @@
       "payments": 14
     },
     {
-      "seller": "win.oneshotagent.com",
-      "host": "win.oneshotagent.com",
-      "usd": 11.99,
-      "payments": 119
-    },
-    {
-      "seller": "CheapTokens AI Inference",
-      "host": "cheaptokens.ai",
-      "usd": 11,
-      "payments": 11
-    },
-    {
       "seller": "api.messari.io",
       "host": "api.messari.io",
-      "usd": 8.5,
-      "payments": 34
+      "usd": 9.25,
+      "payments": 37
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 7.74,
-      "payments": 387
+      "usd": 7.58,
+      "payments": 380
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 4.1,
-      "payments": 228
+      "usd": 4.72,
+      "payments": 191
     }
   ],
-  "tookMs": 50924
+  "tookMs": 71822
 }
