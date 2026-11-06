@@ -1,108 +1,108 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-05T22:15:10.000Z",
+  "asOf": "2026-11-06T00:35:36.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 53589475,
-    "toBlock": 53632674
+    "fromBlock": 53631604,
+    "toBlock": 53674803
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 343.91,
-  "payments": 10136,
-  "payers": 443,
-  "activeSellers": 117,
+  "usd": 307.57,
+  "payments": 11248,
+  "payers": 417,
+  "activeSellers": 112,
   "listedSellers": 1844,
   "biggest": {
-    "usd": 15,
+    "usd": 12,
     "seller": "x402.dtelecom.org"
   },
   "perHourUsd": [
-    7.63,
-    10.81,
-    9.74,
-    14.17,
-    22.54,
-    15.77,
-    11.44,
-    11.84,
-    9.16,
-    14.22,
-    18.02,
-    18.63,
-    14.08,
-    28.3,
+    16.1,
+    12.95,
+    6.82,
+    7.55,
+    7.86,
+    8.1,
     17.38,
-    13.68,
-    10.18,
-    17.83,
-    26.33,
-    6.78,
-    11.14,
-    8.37,
-    7.16,
-    18.7
+    6.31,
+    15.46,
+    13.78,
+    10.66,
+    25.13,
+    9.81,
+    7.76,
+    8.32,
+    30.4,
+    9.73,
+    9.6,
+    15.2,
+    11.18,
+    16.05,
+    15.89,
+    14.58,
+    10.96
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 138.07,
-      "payments": 7088
+      "usd": 134.24,
+      "payments": 6894
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 117.6,
-      "payments": 64
-    },
-    {
-      "seller": "CheapTokens AI Inference",
-      "host": "cheaptokens.ai",
-      "usd": 17,
-      "payments": 9
+      "usd": 106.2,
+      "payments": 55
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 7.38,
-      "payments": 369
+      "usd": 7.28,
+      "payments": 364
     },
     {
-      "seller": "agent demand radar",
-      "host": "agent402.tools",
-      "usd": 7.24,
-      "payments": 632
+      "seller": "Apify",
+      "host": "agi.apify.com",
+      "usd": 7,
+      "payments": 7
     },
     {
-      "seller": "Losbeto Market Intelligence",
-      "host": "api.losbeto.xyz",
-      "usd": 6.69,
-      "payments": 111
+      "seller": "api.messari.io",
+      "host": "api.messari.io",
+      "usd": 6.25,
+      "payments": 19
     },
     {
-      "seller": "Toll402",
-      "host": "toll402.dev",
-      "usd": 5,
-      "payments": 1
+      "seller": "StableStudio",
+      "host": "stablestudio.dev",
+      "usd": 5.17,
+      "payments": 32
+    },
+    {
+      "seller": "StableEnrich",
+      "host": "stableenrich.dev",
+      "usd": 4.38,
+      "payments": 256
     },
     {
       "seller": "Arkham x402",
       "host": "api.arkm.com",
-      "usd": 4.6,
-      "payments": 23
-    },
-    {
-      "seller": "BlockRun.AI",
-      "host": "blockrun.ai",
-      "usd": 4.59,
-      "payments": 183
+      "usd": 4.2,
+      "payments": 21
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 4.3,
-      "payments": 86
+      "usd": 4,
+      "payments": 80
+    },
+    {
+      "seller": "win.oneshotagent.com",
+      "host": "win.oneshotagent.com",
+      "usd": 3.51,
+      "payments": 451
     }
   ],
-  "tookMs": 50603
+  "tookMs": 74508
 }
