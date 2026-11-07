@@ -1,71 +1,65 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-07T14:13:33.000Z",
+  "asOf": "2026-11-07T15:12:57.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 54308988,
-    "toBlock": 54352187
+    "fromBlock": 54326811,
+    "toBlock": 54370010
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 595.68,
-  "payments": 6550,
-  "payers": 431,
-  "activeSellers": 157,
+  "usd": 516.81,
+  "payments": 14237,
+  "payers": 572,
+  "activeSellers": 147,
   "listedSellers": 1946,
   "biggest": {
-    "usd": 200,
-    "seller": "Llama 3.1 8B chat"
+    "usd": 15.14,
+    "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    4.75,
-    5.62,
-    3.17,
-    22.98,
-    15.4,
-    204.97,
-    4.49,
-    10.73,
-    7.75,
-    72.63,
-    11.21,
-    33.79,
-    16.55,
-    12.26,
-    12.68,
-    17.73,
-    14.96,
-    10.78,
-    5.13,
-    23.87,
-    12.8,
-    33.27,
-    29.01,
-    9.14
+    6.01,
+    23.12,
+    31.51,
+    11.64,
+    13.85,
+    17.14,
+    10.04,
+    16.82,
+    5.24,
+    23.57,
+    12.67,
+    24.21,
+    37.73,
+    9.08,
+    17.65,
+    12.34,
+    22.99,
+    23.1,
+    18.03,
+    10.97,
+    44.35,
+    100.1,
+    18.75,
+    5.9
   ],
   "top": [
     {
-      "seller": "Llama 3.1 8B chat",
-      "host": "x402.telnyx.com",
-      "usd": 200.02,
-      "payments": 2
+      "seller": "AX1 Console",
+      "host": "www.ax1.vc",
+      "usd": 233.23,
+      "payments": 11844
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 128.9,
+      "usd": 151.9,
       "payments": 64
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 105.08,
+      "usd": 52.34,
       "payments": 4
-    },
-    {
-      "seller": "AX1 Console",
-      "host": "www.ax1.vc",
-      "usd": 75.7,
-      "payments": 3965
     },
     {
       "seller": "southpow.media",
@@ -74,35 +68,41 @@
       "payments": 396
     },
     {
-      "seller": "Stock Trends Market Intelligence",
-      "host": "api.stocktrends.com",
-      "usd": 11.34,
-      "payments": 42
-    },
-    {
       "seller": "vAPI x402 decoder",
       "host": "api-staging.vapinetwork.ai",
-      "usd": 9,
-      "payments": 9
+      "usd": 10,
+      "payments": 10
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 7.2,
-      "payments": 361
+      "usd": 7.3,
+      "payments": 366
     },
     {
-      "seller": "keyring-agent.blockchhub.link",
-      "host": "keyring-agent.blockchhub.link",
-      "usd": 5.95,
-      "payments": 119
+      "seller": "cloud.trycorpus.ai",
+      "host": "cloud.trycorpus.ai",
+      "usd": 6.26,
+      "payments": 6
     },
     {
       "seller": "api.jarvisclaw.ai",
       "host": "api.jarvisclaw.ai",
       "usd": 5.05,
       "payments": 2
+    },
+    {
+      "seller": "Laso Finance",
+      "host": "laso.finance",
+      "usd": 5,
+      "payments": 4
+    },
+    {
+      "seller": "keyring-agent.blockchhub.link",
+      "host": "keyring-agent.blockchhub.link",
+      "usd": 3.8,
+      "payments": 76
     }
   ],
-  "tookMs": 23969
+  "tookMs": 62092
 }
