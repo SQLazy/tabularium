@@ -9,7 +9,31 @@ import { AYB_CLIENT } from "./ayb-client";
 const DATA = "https://raw.githubusercontent.com/SQLazy/tabularium/ayb-data";
 const RPC = "https://base-rpc.publicnode.com";
 
-type Ticker = { asOf: string; usd: number; payments: number; payers: number; activeSellers: number; listedSellers: number; top: { seller: string; usd: number; payments: number }[]; perHourUsd: number[]; biggest: { usd: number; seller: string } | null; definition: string };
+type Demand = { seller: string; usd: number; payments: number; wallets: number; cameBack: number; topWalletShare: number };
+type Ticker = {
+  asOf: string; usd: number; payments: number; payers: number; activeSellers: number; listedSellers: number;
+  top: { seller: string; usd: number; payments: number }[]; perHourUsd: number[]; biggest: { usd: number; seller: string } | null; definition: string;
+  // From 2026-11-07: who comes back (scripts/ayb/demand.mjs). Older tickers lack them.
+  demand?: Demand[]; wallets?: { wallets: number; paidOnce: number; top10Share: number };
+};
+const pct = (n: number) => `${Math.round(n * 100)}%`;
+
+/** WHO COMES BACK: sellers by wallets that paid more than once, and how concentrated the whole day was. */
+function comesBack(t: Ticker | null): string {
+  if (!t?.demand?.length) return "";
+  const rows = t.demand
+    .slice(0, 8)
+    .map((d) => `<li>${esc(d.seller)}: ${d.cameBack.toLocaleString("en-US")} OF ${d.wallets.toLocaleString("en-US")} WALLETS CAME BACK. BUSIEST WALLET ${pct(d.topWalletShare)} OF ${d.payments.toLocaleString("en-US")} PAYMENTS. ${esc(money(d.usd))}</li>`)
+    .join("");
+  const w = t.wallets;
+  const whole = w
+    ? `<div class="sub">THE 10 BUSIEST WALLETS MADE ${pct(w.top10Share)} OF ALL PAYMENTS. ${w.paidOnce.toLocaleString("en-US")} OF ${w.wallets.toLocaleString("en-US")} WALLETS PAID ONCE.</div>`
+    : "";
+  return `<p>WHO COMES BACK:</p>
+<ol id="back">${rows}</ol>
+${whole}
+<div class="sub">A WALLET THAT PAYS ONCE IS OFTEN A ROBOT CHECKING THE PAYWALL. ONE WALLET MAKING MOST OF A SELLER'S PAYMENTS IS ONE CUSTOMER.</div>`;
+}
 
 async function upstream(path: string, ttl: number): Promise<Response> {
   const res = await fetch(`${DATA}/${path}`, { cf: { cacheTtl: ttl, cacheEverything: true } } as RequestInit);
@@ -110,6 +134,7 @@ footer { margin-top:48px; color:var(--dim); font-size:9px; line-height:1.8; }
 <div class="sub">LAST 24 HOURS, ONE BAR PER HOUR. UPDATED HOURLY. <span id="asof">${t ? "AS OF " + esc(new Date(t.asOf).toISOString().slice(0, 16).replace("T", " ")) + " UTC" : ""}</span></div>
 <p>TOP SELLERS:</p>
 <ol id="top">${t ? t.top.slice(0, 5).map((s) => `<li>${esc(s.seller)}: ${esc(money(s.usd))} (${s.payments.toLocaleString("en-US")})</li>`).join("") : ""}</ol>
+${comesBack(t)}
 </section>
 
 <section class="script">

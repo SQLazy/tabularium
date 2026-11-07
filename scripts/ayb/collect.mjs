@@ -4,6 +4,7 @@
 // (b) was made with an EIP-3009 authorization (the scheme x402 "exact" uses), i.e. the same transaction emitted
 // USDC's AuthorizationUsed event. Writes <outDir>/ticker.json and <outDir>/sellers.json (payee -> name).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { sellerDemand, walletConcentration } from "./demand.mjs";
 
 const OUT = process.argv[2] ?? "ayb-out";
 const RPC = process.env.AYB_RPC ?? "https://base-rpc.publicnode.com";
@@ -118,9 +119,10 @@ for (const l of transfers) {
   const fromAddr = "0x" + l.topics[1].slice(26);
   usd += amount;
   payers.add(fromAddr);
-  const s = bySeller.get(to) ?? { usd: 0, payments: 0 };
+  const s = bySeller.get(to) ?? { usd: 0, payments: 0, from: new Map() };
   s.usd += amount;
   s.payments++;
+  s.from.set(fromAddr, (s.from.get(fromAddr) ?? 0) + 1);
   bySeller.set(to, s);
   const hoursAgo = Math.min(23, Math.floor(((head - Number(BigInt(l.blockNumber))) * 2) / 3600));
   byHour[23 - hoursAgo] += amount;
@@ -144,9 +146,12 @@ const ticker = {
   biggest: biggest ? { usd: Number(biggest.usd.toFixed(2)), seller: label(biggest.to) } : null,
   perHourUsd: byHour.map((v) => Number(v.toFixed(2))),
   top,
+  // Who comes back: wallets that paid a seller more than once in the window (robots checking a paywall pay once).
+  demand: sellerDemand(bySeller, label),
+  wallets: walletConcentration(bySeller),
   tookMs: Date.now() - t0,
 };
 writeFileSync(`${OUT}/ticker.json`, JSON.stringify(ticker, null, 2) + "\n");
 // The small map the browser needs for the Wrapped card: payee -> display name, only sellers that ever appear.
 writeFileSync(`${OUT}/names.json`, JSON.stringify(Object.fromEntries(Object.entries(bazaar.payees).map(([p, s]) => [p, s.name ?? s.host]))));
-console.log(JSON.stringify({ ...ticker, perHourUsd: undefined, top: ticker.top.slice(0, 5) }, null, 2));
+console.log(JSON.stringify({ ...ticker, perHourUsd: undefined, top: ticker.top.slice(0, 5), demand: ticker.demand.slice(0, 5) }, null, 2));
