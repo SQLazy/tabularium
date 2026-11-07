@@ -1,95 +1,83 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-07T03:15:53.000Z",
+  "asOf": "2026-11-07T04:16:40.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 54111688,
-    "toBlock": 54154887
+    "fromBlock": 54129927,
+    "toBlock": 54173126
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 398.95,
-  "payments": 5550,
-  "payers": 706,
-  "activeSellers": 87,
+  "usd": 331.58,
+  "payments": 4072,
+  "payers": 497,
+  "activeSellers": 121,
   "listedSellers": 1952,
   "biggest": {
     "usd": 34.9,
     "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    7.8,
-    9.5,
-    9.72,
-    8.07,
-    25.07,
-    8.36,
-    34.52,
-    26.53,
-    16.69,
-    14.25,
-    12.52,
-    74.5,
-    17.29,
-    3.39,
-    9.73,
-    5.06,
-    18.36,
-    22.8,
-    25.04,
-    5.27,
-    4.53,
-    6.14,
-    18.57,
-    15.25
+    12.6,
+    80.62,
+    10.3,
+    3.05,
+    9.93,
+    19.91,
+    11.38,
+    14.99,
+    25.82,
+    4.43,
+    4.36,
+    6.73,
+    17.95,
+    15.39,
+    5.74,
+    27.7,
+    15.97,
+    5.6,
+    2.88,
+    5.89,
+    12.99,
+    10.81,
+    3.29,
+    3.22
   ],
   "top": [
     {
-      "seller": "api.cleave.fi",
-      "host": "api.cleave.fi",
-      "usd": 116.93,
-      "payments": 8
-    },
-    {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 116.3,
-      "payments": 41
+      "usd": 118.6,
+      "payments": 35
+    },
+    {
+      "seller": "api.cleave.fi",
+      "host": "api.cleave.fi",
+      "usd": 117.45,
+      "payments": 8
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 57.06,
-      "payments": 3029
+      "usd": 32.18,
+      "payments": 1785
     },
     {
       "seller": "BotPay NFT Mint",
       "host": "api.botpay.network",
-      "usd": 32,
-      "payments": 320
-    },
-    {
-      "seller": "On-chain Forensics",
-      "host": "solene-fa2010da.base44.app",
-      "usd": 26.12,
-      "payments": 5
+      "usd": 11.5,
+      "payments": 115
     },
     {
       "seller": "vAPI x402 decoder",
       "host": "api-staging.vapinetwork.ai",
-      "usd": 10,
-      "payments": 10
+      "usd": 8,
+      "payments": 8
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 7.04,
-      "payments": 352
-    },
-    {
-      "seller": "cloud.trycorpus.ai",
-      "host": "cloud.trycorpus.ai",
-      "usd": 6.12,
-      "payments": 5
+      "usd": 7.08,
+      "payments": 354
     },
     {
       "seller": "Factline",
@@ -100,9 +88,21 @@
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 3.75,
-      "payments": 75
+      "usd": 3.4,
+      "payments": 68
+    },
+    {
+      "seller": "On-chain Forensics",
+      "host": "solene-fa2010da.base44.app",
+      "usd": 3.08,
+      "payments": 5
+    },
+    {
+      "seller": "Crypto Token Price Data",
+      "host": "api.kadec0.xyz",
+      "usd": 2.71,
+      "payments": 140
     }
   ],
-  "tookMs": 38735
+  "tookMs": 41112
 }
