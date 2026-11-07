@@ -17,7 +17,10 @@ export interface Funnel {
   /** 402 price quotes served to clients that sent no payment: the earliest demand signal. */
   quoted: number;
   quotedLast7d: number;
-  /** Sum over the last 7 UTC days of distinct askers per day (IP + User-Agent, hashed with a salt deleted daily). */
+  /** quotedLast7d without robots (crawlers, monitors and probes: client family "bot"). The demand to watch. */
+  quotedByAgentsLast7d: number;
+  /** Sum over the last 7 UTC days of distinct askers per day (IP + User-Agent, hashed with a salt deleted daily).
+   * Robots are not askers (from 2026-11-07; older days in the window still include them). */
   dailyUniqueAskersLast7d: number;
   paid: number;
   /** A payment was sent but the call was not charged (bad or reused payment, invalid request). */
@@ -216,6 +219,7 @@ export class Stats extends DurableObject<Env> {
     return {
       quoted: sum("kind = 'quoted'"),
       quotedLast7d: sum("kind = 'quoted' AND day >= ?", since),
+      quotedByAgentsLast7d: sum("kind = 'quoted' AND day >= ? AND family != 'bot'", since),
       dailyUniqueAskersLast7d: (this.sql.exec("SELECT COUNT(*) AS n FROM askers WHERE service = ? AND day >= ?", service, since).one() as { n: number }).n,
       paid: sum("kind = 'paid'"),
       rejected: sum("kind = 'rejected'"),
