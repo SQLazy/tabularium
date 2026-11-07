@@ -1,95 +1,95 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-07T19:12:00.000Z",
+  "asOf": "2026-11-07T20:13:56.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 54398526,
-    "toBlock": 54441725
+    "fromBlock": 54417107,
+    "toBlock": 54460306
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 1382.15,
-  "payments": 49451,
-  "payers": 500,
-  "activeSellers": 117,
+  "usd": 1505.14,
+  "payments": 56667,
+  "payers": 491,
+  "activeSellers": 118,
   "listedSellers": 1946,
   "biggest": {
     "usd": 199.78,
     "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    9.61,
-    12.77,
-    11.36,
-    20.38,
-    12.97,
-    29.87,
-    81.42,
-    78.7,
-    62.37,
-    87.07,
-    87.4,
-    58.39,
-    43.39,
-    44.26,
-    262.94,
-    48.67,
-    51.13,
-    67.93,
-    55.01,
-    53.06,
-    56.18,
-    51.16,
-    47.8,
-    48.32
+    72.04,
+    55.56,
+    45.17,
+    59.38,
+    250.83,
+    47.2,
+    51.37,
+    70.1,
+    57.69,
+    48.95,
+    55.26,
+    50.66,
+    49.59,
+    54.25,
+    50.87,
+    45.06,
+    54.9,
+    49.57,
+    61.19,
+    54.63,
+    54.23,
+    67.15,
+    43.08,
+    56.42
   ],
   "top": [
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 935.71,
-      "payments": 46951
+      "usd": 1072,
+      "payments": 53771
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 242.65,
+      "usd": 254.99,
       "payments": 6
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 143.9,
-      "payments": 66
+      "usd": 125.1,
+      "payments": 64
     },
     {
       "seller": "CheapTokens AI Inference",
       "host": "cheaptokens.ai",
-      "usd": 12.2,
-      "payments": 13
+      "usd": 8.2,
+      "payments": 9
     },
     {
-      "seller": "cloud.trycorpus.ai",
-      "host": "cloud.trycorpus.ai",
-      "usd": 10.11,
-      "payments": 11
+      "seller": "win.oneshotagent.com",
+      "host": "win.oneshotagent.com",
+      "usd": 8.15,
+      "payments": 378
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 6.58,
-      "payments": 330
+      "usd": 6.8,
+      "payments": 341
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 6.35,
-      "payments": 127
+      "usd": 6.2,
+      "payments": 124
     },
     {
-      "seller": "BlockRun.AI",
-      "host": "blockrun.ai",
-      "usd": 2.85,
-      "payments": 186
+      "seller": "cloud.trycorpus.ai",
+      "host": "cloud.trycorpus.ai",
+      "usd": 3.23,
+      "payments": 11
     },
     {
       "seller": "Suede AI",
@@ -104,5 +104,5 @@
       "payments": 466
     }
   ],
-  "tookMs": 54012
+  "tookMs": 53465
 }
