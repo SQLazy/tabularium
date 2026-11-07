@@ -1,108 +1,108 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-07T11:12:13.000Z",
+  "asOf": "2026-11-07T12:19:03.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 54254591,
-    "toBlock": 54297790
+    "fromBlock": 54274639,
+    "toBlock": 54317838
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 354.59,
-  "payments": 7496,
-  "payers": 442,
-  "activeSellers": 156,
+  "usd": 373.75,
+  "payments": 7224,
+  "payers": 418,
+  "activeSellers": 229,
   "listedSellers": 1946,
   "biggest": {
     "usd": 40.47,
     "seller": "Bitrefill"
   },
   "perHourUsd": [
-    11.31,
-    6.77,
-    21.65,
-    34.13,
-    6.64,
-    11.61,
-    11.31,
-    7.76,
-    13.57,
-    8.67,
-    13.47,
-    8.72,
-    47.41,
-    15.19,
-    7.4,
-    24.06,
-    6.57,
-    11.57,
-    16.94,
-    8.03,
-    21.4,
-    17.94,
-    13.1,
-    9.37
+    8.36,
+    47.78,
+    16.25,
+    6.11,
+    24.02,
+    6.37,
+    11.39,
+    17.25,
+    8.17,
+    21.55,
+    17.7,
+    14.51,
+    8.13,
+    11.23,
+    15.75,
+    38.95,
+    20.88,
+    11.08,
+    16.24,
+    4.98,
+    4.09,
+    4.65,
+    22.99,
+    15.31
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 133.2,
-      "payments": 61
+      "usd": 144.9,
+      "payments": 67
     },
     {
       "seller": "AX1 Console",
       "host": "www.ax1.vc",
-      "usd": 99.91,
-      "payments": 5174
+      "usd": 95.71,
+      "payments": 4968
     },
     {
       "seller": "Bitrefill",
       "host": "api.bitrefill.com",
       "usd": 40.47,
-      "payments": 2
-    },
-    {
-      "seller": "api.cleave.fi",
-      "host": "api.cleave.fi",
-      "usd": 17.78,
       "payments": 1
     },
     {
       "seller": "textforagents.com",
       "host": "textforagents.com",
-      "usd": 15.03,
-      "payments": 6
+      "usd": 32.06,
+      "payments": 8
     },
     {
-      "seller": "vAPI x402 decoder",
-      "host": "api-staging.vapinetwork.ai",
-      "usd": 14,
-      "payments": 10
+      "seller": "Stock Trends Market Intelligence",
+      "host": "api.stocktrends.com",
+      "usd": 11.34,
+      "payments": 42
+    },
+    {
+      "seller": "api.cleave.fi",
+      "host": "api.cleave.fi",
+      "usd": 10.32,
+      "payments": 1
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 7.14,
-      "payments": 357
+      "usd": 7.3,
+      "payments": 365
     },
     {
       "seller": "cloud.trycorpus.ai",
       "host": "cloud.trycorpus.ai",
-      "usd": 6.08,
-      "payments": 6
+      "usd": 6.09,
+      "payments": 7
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 3.75,
-      "payments": 75
+      "usd": 5.3,
+      "payments": 106
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 3.62,
-      "payments": 140
+      "usd": 2.96,
+      "payments": 88
     }
   ],
-  "tookMs": 24195
+  "tookMs": 26692
 }
