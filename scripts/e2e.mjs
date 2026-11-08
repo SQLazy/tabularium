@@ -342,7 +342,7 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
   const sa = after.services.snapshot;
   check(
     "snapshot stats count only the successful fetches, and failed ones as rejected",
-    sa.paidCalls - sb.paidCalls === tally.ok && sa.funnel.paid - sb.funnel.paid === tally.ok && sa.funnel.rejected - sb.funnel.rejected === tally.refused && Math.abs(sa.revenueUsd - sb.revenueUsd - 0.002 * tally.ok) < 1e-9,
+    sa.paidCalls - sb.paidCalls === tally.ok && sa.funnel.paid - sb.funnel.paid === tally.ok && sa.funnel.rejected - sb.funnel.rejected === tally.refused && Math.abs(sa.revenueUsd - sb.revenueUsd - 0.005 * tally.ok) < 1e-9,
     JSON.stringify({ tally, calls: sa.paidCalls - sb.paidCalls, paid: sa.funnel.paid - sb.funnel.paid, rejected: sa.funnel.rejected - sb.funnel.rejected }),
   );
   check("a wallet that paid for snapshot and memory counts once as cross-service", mw.status === 200 && after.crossServiceWallets - before.crossServiceWallets === 1, JSON.stringify({ before: before.crossServiceWallets, after: after.crossServiceWallets }));
