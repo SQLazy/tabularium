@@ -267,3 +267,66 @@ export function checkPage(read: PageRead): { text: string; checks: PageChecks } 
     },
   };
 }
+
+// --- Documents (PDF, Word, Excel, OpenDocument, Numbers) ------------------------------------------------------------
+// Converted with Workers AI toMarkdown, which is free for these formats (only image conversion costs neurons, and
+// embedded images are switched off). Images themselves are still refused.
+export const DOCUMENTS: { ext: string; mime: string }[] = [
+  { ext: ".pdf", mime: "application/pdf" },
+  { ext: ".docx", mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+  { ext: ".xlsx", mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+  { ext: ".xlsm", mime: "application/vnd.ms-excel.sheet.macroenabled.12" },
+  { ext: ".xlsb", mime: "application/vnd.ms-excel.sheet.binary.macroenabled.12" },
+  { ext: ".xls", mime: "application/vnd.ms-excel" },
+  { ext: ".ods", mime: "application/vnd.oasis.opendocument.spreadsheet" },
+  { ext: ".odt", mime: "application/vnd.oasis.opendocument.text" },
+  { ext: ".numbers", mime: "application/vnd.apple.numbers" },
+];
+
+/**
+ * The document format of a response, from its content type, or from the URL's extension when the server only says
+ * "application/octet-stream" (common for PDFs on file hosts). Null when it is not a document we convert.
+ */
+export function documentFormat(contentType: string, pathname: string): { ext: string; mime: string } | null {
+  const t = contentType.split(";")[0].trim().toLowerCase();
+  const byType = DOCUMENTS.find((d) => d.mime === t);
+  if (byType) return byType;
+  if (t === "application/octet-stream" || t === "binary/octet-stream" || t === "application/x-pdf" || t === "") {
+    const p = pathname.toLowerCase();
+    return DOCUMENTS.find((d) => p.endsWith(d.ext)) ?? null;
+  }
+  return null;
+}
+
+/** A file name for the converter and the record's title: the URL's last path segment, or "document" + extension. */
+export function documentName(pathname: string, ext: string): string {
+  let last = pathname.split("/").filter(Boolean).pop() ?? "";
+  try {
+    last = decodeURIComponent(last);
+  } catch {
+    // keep it as sent
+  }
+  last = last.replace(/[^\w.\- ]+/g, "_").slice(0, 120);
+  return last.toLowerCase().endsWith(ext) ? last : `${last || "document"}${ext}`;
+}
+
+/** Converter output, tidied: drops the "# <file name>" heading the converter adds, keeps the rest. */
+export function tidyDocument(markdown: string, name: string): string {
+  const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+  if (lines[0]?.trim() === `# ${name}`) lines.shift();
+  return tidyText(lines.join("\n"));
+}
+
+/**
+ * Whether a converted document has any text beyond the converter's own headings ("## Contents", "### Page 3").
+ * Scanned PDFs and form-only PDFs (the IRS W-9 came back as six empty page headings) have none, and a buyer should
+ * not pay for that: the call is refused and not charged.
+ */
+export function documentHasText(markdown: string): boolean {
+  const body = markdown
+    .split("\n")
+    .filter((l) => !/^#{1,6}\s*(contents|page \d+)?\s*$/i.test(l.trim()))
+    .join("")
+    .replace(/[\s|:-]+/g, "");
+  return body.length >= 8;
+}

@@ -20,4 +20,6 @@ export interface Env {
   SIGNING_KEY_PKCS8: string;
   /** Matching raw public key, hex. Public, published at /menu. */
   SIGNING_PUBKEY_HEX: string;
+  /** Workers AI, for snapshot's document conversion (toMarkdown; free for documents). Absent in the e2e dev build. */
+  AI?: Ai;
 }

@@ -12,6 +12,8 @@
       { "name": "STATS", "class_name": "Stats" }
     ]
   },
+  // Workers AI: snapshot converts PDF, Word, Excel and OpenDocument files with toMarkdown (free for documents).
+  "ai": { "binding": "AI" },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["Workspace"] },
     { "tag": "v2", "new_sqlite_classes": ["Stats"] }
