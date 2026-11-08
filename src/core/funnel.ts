@@ -26,6 +26,11 @@ const FAMILIES: [RegExp, string][] = [
   [/claude|anthropic/, "anthropic"],
   [/openai|chatgpt|gptbot/, "openai"],
   [/coinbase|\bcdp\b|bazaar/, "coinbase"],
+  // Robots that list, rank or watch x402 services: they ask for a price and never mean to pay. Seen in a live
+  // sample on 2026-11-07 (every request in 6 minutes): x402-router-crawler, x402station, KertivoStatus, mcpbeat,
+  // AgentRankProbe, SettledProbe, agent-collector. Checked before the language families, so a monitor written in
+  // Python still counts as a robot.
+  [/crawl|spider|probe|monitor|uptime|status|heartbeat|beat\/|collector|indexer|checker|station\//, "bot"],
   [/python|aiohttp|httpx|urllib/, "python"],
   [/axios|node|undici|deno|\bbun\b/, "node"],
   [/curl|wget/, "curl"],
@@ -42,6 +47,9 @@ export function clientFamily(ua: string | undefined | null): string {
   for (const [re, family] of FAMILIES) if (re.test(s)) return family;
   return "other";
 }
+
+/** Robots (family "bot") still count as quotes, under their family, but never as askers. */
+export const ROBOT_FAMILY = "bot";
 
 /** Our own test runs mark their requests with this header so they never count as demand. */
 export const TEST_HEADER = "x-tabularium-test";

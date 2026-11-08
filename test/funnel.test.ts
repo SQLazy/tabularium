@@ -35,6 +35,18 @@ describe("clientFamily", () => {
     ["curl/8.9.1", "curl"],
     ["Go-http-client/2.0", "go"],
     ["Mozilla/5.0 (compatible; Googlebot/2.1)", "bot"],
+    // Robots from the 2026-11-07 live sample: listers, rankers and monitors of x402 services.
+    ["x402-router-crawler/4.0", "bot"],
+    ["x402station/0.1", "bot"],
+    ["KertivoStatus/1.0", "bot"],
+    ["mcpbeat/0.1", "bot"],
+    ["AgentRankProbe/0.1", "bot"],
+    ["SettledProbe/0.1", "bot"],
+    ["agent-collector/0.1", "bot"],
+    ["python-uptime-checker/2.0", "bot"],
+    // Not enough to call these robots: they stay "other".
+    ["Moonglade/1.0", "other"],
+    ["vantis-keyring/0.1", "other"],
     ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130", "browser"],
     ["", "none"],
     [undefined, "none"],

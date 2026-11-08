@@ -12,7 +12,7 @@ import { CDP_FACILITATOR_URL, cdpAuthHeaders } from "../cdp";
 import { openApi } from "../openapi";
 import { CAIP2, PAYMENT_HEADER, isExcluded, payerOf, paymentNonce, walletStub, type C } from "./identity";
 import { callInput, micro, type PaidCall, type Service } from "./service";
-import { TEST_HEADER, clientFamily, funnelKind } from "./funnel";
+import { ROBOT_FAMILY, TEST_HEADER, clientFamily, funnelKind } from "./funnel";
 import { MCP_PATH, mcpTools } from "../mcp";
 
 // Higher-priced calls settle UPFRONT (before the handler): each is worth more than the gas it costs to make a
@@ -105,8 +105,10 @@ async function recordFunnel(c: C, paid: Paid, status: number, charged: boolean, 
   const wallet = hasPayment ? payerOf(c) : null;
   if (c.req.header(TEST_HEADER) || (wallet && isExcluded(c.env, wallet))) return statsStub(c.env).recordExcludedFunnel();
   const ua = c.req.header("user-agent") ?? "";
-  const asker = kind === "quoted" ? `${c.req.header("cf-connecting-ip") ?? ""}\n${ua}` : undefined;
-  await statsStub(c.env).funnel(paid.service, paid.call.name, kind, clientFamily(ua), ts, asker);
+  const family = clientFamily(ua);
+  // A robot is a quote but not an asker: askers are the clients that might pay.
+  const asker = kind === "quoted" && family !== ROBOT_FAMILY ? `${c.req.header("cf-connecting-ip") ?? ""}\n${ua}` : undefined;
+  await statsStub(c.env).funnel(paid.service, paid.call.name, kind, family, ts, asker);
 }
 
 export function createPlatform(services: Service[], opts: { paywall: boolean }) {
