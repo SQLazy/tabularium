@@ -35,8 +35,6 @@ export const PRICES = {
 } as const;
 
 /** Snapshot service prices (USDC per successful call). */
-// $0.005 until 2026-11-07, then $0.002: the Bazaar's busiest page readers charge $0.001-0.002 (oneshotagent web-read
-// 9,946 calls/30d at $0.002, clawfetch 3,084 at $0.001) and ours had 2 calls. Still clears the CDP fee ($0.001).
 export const SNAPSHOT_PRICES = {
-  fetch: "$0.002",
+  fetch: "$0.005",
 } as const;
