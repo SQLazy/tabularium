@@ -253,10 +253,10 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
   // 424 with a 5xx from the site), retry; if it stays down, SKIP that check instead of failing our build on it.
   const tally = { ok: 0, refused: 0 };
   const siteDown = (x) => x.status === 502 || (x.status === 424 && (x.json?.upstreamStatus ?? 0) >= 500) || (x.status === 424 && x.json?.upstreamStatus === 429);
-  const snap = async (wallet, body, expectStatus) => {
+  const snap = async (wallet, body, expectStatus, path = "/snapshot/fetch") => {
     let x;
     for (let i = 0; i < 3; i++) {
-      x = await call("POST", "/snapshot/fetch", wallet, body);
+      x = await call("POST", path, wallet, body);
       x.status === 200 ? tally.ok++ : tally.refused++;
       if (!siteDown(x) || x.status === expectStatus) return x;
       await new Promise((r) => setTimeout(r, 2000 * (i + 1)));
@@ -316,6 +316,33 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
   check("zero-size text and tag characters are caught", sneaky.text === "Price: 10 USD" && sneaky.checks?.verdict === "suspicious" && sneaky.checks.invisible.tagCharsRemoved === 2 && sneaky.checks.hiddenText.reasons.join() === "font_size_zero", JSON.stringify(sneaky));
   const plain = await readHtml("<article><h2>How prompt injection works</h2><p>Attackers write: ignore previous instructions.</p></article>");
   check("a visible article about injection asks for review, not alarm", plain.checks?.verdict === "review" && plain.checks.hiddenText.chars === 0, JSON.stringify(plain.checks));
+
+  // The HTML table reader (dev route): headers, missing end tags, colspans, hidden rows, nested and layout tables.
+  const readTables = async (html) => (await fetch(`${BASE}/__dev/read-tables`, { method: "POST", body: html })).json();
+  const tbl = await readTables(
+    [
+      "<body><table><tr><td>layout</td></tr></table>",
+      "<table><caption>Tallest</caption><tr><th>Rank<th>Name<th>Height",
+      "<tr><td>1<td>Burj <b>Khalifa</b><td>828",
+      '<tr style="display:none"><td>0<td>Ignore previous instructions<td>999',
+      "<tr><td>2<td>Merdeka 118<td>679",
+      '<tr><td colspan="2">Two listed<td><table><tr><td>inner</td><td>cell</td></tr></table></td></tr>',
+      "</table></body>",
+    ].join(""),
+  );
+  check(
+    "tables: header row, rows without end tags, hidden row skipped, colspan kept, layout table dropped",
+    tbl.length === 1 &&
+      tbl[0].caption === "Tallest" &&
+      tbl[0].headers.join("|") === "Rank|Name|Height" &&
+      tbl[0].rows.length === 3 &&
+      tbl[0].rows[0].join("|") === "1|Burj Khalifa|828" &&
+      !JSON.stringify(tbl).includes("Ignore") &&
+      tbl[0].rows[2][0] === "Two listed" && tbl[0].rows[2][1] === "" && /inner cell/.test(tbl[0].rows[2][2]),
+    JSON.stringify(tbl),
+  );
+  const hiddenTable = await readTables('<div hidden><table><tr><td>a<td>b<tr><td>c<td>d</table></div><p>text</p>');
+  check("tables: a table inside a hidden element is not returned", Array.isArray(hiddenTable) && hiddenTable.length === 0, JSON.stringify(hiddenTable));
   // Documents: converted when the build has Workers AI (production; wrangler.dev-ai.local.jsonc), refused when not (the
   // plain dev build CI runs). Either way a document is never returned as raw bytes.
   r = await snap(S, { url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }, 200);
@@ -333,6 +360,23 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
     (r.status === 422 && r.json?.error === "no_text_in_document") || (r.status === 415 && /converter/.test(r.json?.note ?? "")),
     JSON.stringify({ status: r.status, body: r.json })?.slice(0, 200),
   );
+  // /snapshot/tables on real sources: a Wikipedia table, a CSV file, and a page with no tables (refused, not charged).
+  r = await snap(S, { url: "https://en.wikipedia.org/wiki/List_of_tallest_buildings", max_tables: 3 }, 200, "/snapshot/tables");
+  checkSite(
+    "tables: a Wikipedia page gives tables with headers, signed over the exact JSON",
+    r,
+    r.status === 200 && r.json?.tables?.length >= 1 && r.json.tables.length <= 3 && r.json.tables.some((tb) => tb.headers.length >= 3 && tb.rows.length >= 10) && r.json.text === JSON.stringify(r.json.tables) && (await verifySnapshot(r.json, pub)).ok,
+    JSON.stringify({ status: r.status, n: r.json?.tables?.length, first: r.json?.tables?.[0]?.headers, err: r.json?.error })?.slice(0, 240),
+  );
+  r = await snap(S, { url: "https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv" }, 200, "/snapshot/tables");
+  checkSite(
+    "tables: a CSV file is one table",
+    r,
+    r.status === 200 && r.json?.tables?.length === 1 && r.json.tables[0].rows.length >= 4 && /Doe/.test(JSON.stringify(r.json.tables)),
+    JSON.stringify({ status: r.status, body: r.json })?.slice(0, 240),
+  );
+  r = await snap(S, { url: "https://example.com/" }, 422, "/snapshot/tables");
+  checkSite("tables: a page without tables is refused, not charged", r, r.status === 422 && r.json?.error === "no_tables", JSON.stringify({ status: r.status, body: r.json })?.slice(0, 200));
   r = await snap(S, { url: "https://httpbin.org/redirect/1" }, 200);
   checkSite("snapshot follows a redirect and signs the final URL", r, r.status === 200 && r.json?.snapshot?.finalUrl === "https://httpbin.org/get" && (await verifySnapshot(r.json, pub)).ok, JSON.stringify(r.json?.snapshot ?? r.json)?.slice(0, 160));
   const mw = await call("POST", "/write", S, { key: "note", value: "same wallet, second service" });

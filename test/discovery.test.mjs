@@ -11,8 +11,8 @@ describe("Bazaar listing", () => {
     const r = routes(env);
     expect(Object.keys(r).sort()).toEqual([
       "GET /export", "GET /mcp/tabularium_export", "GET /mcp/tabularium_read", "GET /read",
-      "POST /mcp/tabularium_renew", "POST /mcp/tabularium_snapshot_fetch", "POST /mcp/tabularium_write",
-      "POST /renew", "POST /snapshot/fetch", "POST /write",
+      "POST /mcp/tabularium_renew", "POST /mcp/tabularium_snapshot_fetch", "POST /mcp/tabularium_snapshot_tables", "POST /mcp/tabularium_write",
+      "POST /renew", "POST /snapshot/fetch", "POST /snapshot/tables", "POST /write",
     ]);
     for (const [route, cfg] of Object.entries(r)) {
       // HTTP routes: the server adds the HTTP method per request (seen in the live 402); validate that completed form.

@@ -5,8 +5,8 @@
 //     today, so this makes the concurrency test bite against future async work (R2, fetch) too.
 // Referenced only by wrangler.dev.jsonc; never by the production config, so it cannot ship by accident.
 import { createApp } from "./app";
-import { htmlToText } from "./services/snapshot";
-import { checkPage } from "./services/snapshot-core";
+import { htmlTables, htmlToText } from "./services/snapshot";
+import { checkPage, finishTables } from "./services/snapshot-core";
 import { Workspace as Base } from "./workspace";
 import type { Entry } from "./chain";
 
@@ -29,6 +29,10 @@ export default {
       const bytes = new Uint8Array(await req.arrayBuffer());
       const read = await htmlToText(bytes, "text/html; charset=utf-8");
       return Response.json({ title: read.title, ...checkPage(read) });
+    }
+    if (req.method === "POST" && new URL(req.url).pathname === "/__dev/read-tables") {
+      const bytes = new Uint8Array(await req.arrayBuffer());
+      return Response.json(finishTables(await htmlTables(bytes, "text/html; charset=utf-8"), 20));
     }
     return app.fetch(req, env, ctx);
   },
