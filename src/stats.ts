@@ -22,6 +22,13 @@ export interface Funnel {
   /** Sum over the last 7 UTC days of distinct askers per day (IP + User-Agent, hashed with a salt deleted daily).
    * Robots are not askers (from 2026-11-07; older days in the window still include them). */
   dailyUniqueAskersLast7d: number;
+  /**
+   * Quotes in the last 7 days, robots left out, whose request carried real input (a URL to read, a key to fetch)
+   * rather than nothing or the listing's own example. Agents that wanted the call and saw the price: the number
+   * docs/PRICING.md decides on. Counted from 2026-11-08.
+   */
+  quotedWithRequestLast7d: number;
+  quotedWithRequest: number;
   paid: number;
   /** A payment was sent but the call was not charged (bad or reused payment, invalid request). */
   rejected: number;
@@ -127,8 +134,18 @@ export class Stats extends DurableObject<Env> {
   }
 
   /** One funnel event. `asker` (IP + User-Agent) is only hashed with today's salt, never stored as given. */
-  async funnel(service: string, call: string, kind: FunnelKind, family: string, ts: number, asker?: string): Promise<void> {
+  async funnel(service: string, call: string, kind: FunnelKind, family: string, ts: number, asker?: string, asked = false): Promise<void> {
     const day = utcDay(ts);
+    // "asked" rows sit beside the quote they belong to (kind is text; every other query filters on its own kind).
+    if (asked) {
+      this.sql.exec(
+        "INSERT INTO funnel (service, call, day, kind, family, n) VALUES (?, ?, ?, 'asked', ?, 1) ON CONFLICT DO UPDATE SET n = n + 1",
+        service,
+        call,
+        day,
+        family,
+      );
+    }
     this.sql.exec(
       "INSERT INTO funnel (service, call, day, kind, family, n) VALUES (?, ?, ?, ?, ?, 1) ON CONFLICT DO UPDATE SET n = n + 1",
       service,
@@ -221,6 +238,8 @@ export class Stats extends DurableObject<Env> {
       quotedLast7d: sum("kind = 'quoted' AND day >= ?", since),
       quotedByAgentsLast7d: sum("kind = 'quoted' AND day >= ? AND family != 'bot'", since),
       dailyUniqueAskersLast7d: (this.sql.exec("SELECT COUNT(*) AS n FROM askers WHERE service = ? AND day >= ?", service, since).one() as { n: number }).n,
+      quotedWithRequestLast7d: sum("kind = 'asked' AND day >= ? AND family != 'bot'", since),
+      quotedWithRequest: sum("kind = 'asked' AND family != 'bot'"),
       paid: sum("kind = 'paid'"),
       rejected: sum("kind = 'rejected'"),
       quotedByClient,
