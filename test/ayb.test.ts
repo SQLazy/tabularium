@@ -68,6 +68,27 @@ describe("the page", () => {
     expect(html.split("</script>").length).toBe(2); // exactly one script, closed once
   });
 
+  it("shows who comes back, escaping seller names there too", async () => {
+    const withDemand = {
+      ...ticker,
+      demand: [{ seller: evil, usd: 7.5, payments: 40, wallets: 12, cameBack: 9, topWalletShare: 0.25 }],
+      wallets: { wallets: 300, paidOnce: 240, top10Share: 0.81 },
+    };
+    vi.stubGlobal("fetch", async () => new Response(JSON.stringify(withDemand), { status: 200 }));
+    const html = await (await createApp({ paywall: false }).request("http://localhost/allyourbase")).text();
+    expect(html).toContain("WHO COMES BACK:");
+    expect(html).toContain("9 OF 12 WALLETS CAME BACK. BUSIEST WALLET 25% OF 40 PAYMENTS. $7.50");
+    expect(html).toContain("THE 10 BUSIEST WALLETS MADE 81% OF ALL PAYMENTS. 240 OF 300 WALLETS PAID ONCE.");
+    expect(html).not.toContain(evil);
+    expect(html.split("</script>").length).toBe(2);
+  });
+
+  it("an older ticker without demand data renders without the section", async () => {
+    vi.stubGlobal("fetch", async () => new Response(JSON.stringify(ticker), { status: 200 }));
+    const html = await (await createApp({ paywall: false }).request("http://localhost/allyourbase")).text();
+    expect(html).not.toContain("WHO COMES BACK");
+  });
+
   it("still renders, saying it is counting, when the data is not there yet", async () => {
     vi.stubGlobal("fetch", async () => new Response("404", { status: 404 }));
     const app = createApp({ paywall: false });
