@@ -316,6 +316,23 @@ check("a payment on a failed call is a rejected funnel event", s2.services.memor
   check("zero-size text and tag characters are caught", sneaky.text === "Price: 10 USD" && sneaky.checks?.verdict === "suspicious" && sneaky.checks.invisible.tagCharsRemoved === 2 && sneaky.checks.hiddenText.reasons.join() === "font_size_zero", JSON.stringify(sneaky));
   const plain = await readHtml("<article><h2>How prompt injection works</h2><p>Attackers write: ignore previous instructions.</p></article>");
   check("a visible article about injection asks for review, not alarm", plain.checks?.verdict === "review" && plain.checks.hiddenText.chars === 0, JSON.stringify(plain.checks));
+  // Documents: converted when the build has Workers AI (production; wrangler.dev-ai.local.jsonc), refused when not (the
+  // plain dev build CI runs). Either way a document is never returned as raw bytes.
+  r = await snap(S, { url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }, 200);
+  checkSite(
+    "a PDF comes back as markdown (or, without the converter, is refused and not charged)",
+    r,
+    (r.status === 200 && /Dummy PDF file/.test(r.json?.text) && r.json?.snapshot?.title === "dummy.pdf" && (await verifySnapshot(r.json, pub)).ok) ||
+      (r.status === 415 && /converter/.test(r.json?.note ?? "")),
+    JSON.stringify({ status: r.status, body: r.json })?.slice(0, 200),
+  );
+  r = await snap(S, { url: "https://www.irs.gov/pub/irs-pdf/fw9.pdf" }, 422);
+  checkSite(
+    "a form-only PDF with no text is refused, not charged",
+    r,
+    (r.status === 422 && r.json?.error === "no_text_in_document") || (r.status === 415 && /converter/.test(r.json?.note ?? "")),
+    JSON.stringify({ status: r.status, body: r.json })?.slice(0, 200),
+  );
   r = await snap(S, { url: "https://httpbin.org/redirect/1" }, 200);
   checkSite("snapshot follows a redirect and signs the final URL", r, r.status === 200 && r.json?.snapshot?.finalUrl === "https://httpbin.org/get" && (await verifySnapshot(r.json, pub)).ok, JSON.stringify(r.json?.snapshot ?? r.json)?.slice(0, 160));
   const mw = await call("POST", "/write", S, { key: "note", value: "same wallet, second service" });

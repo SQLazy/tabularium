@@ -13,10 +13,14 @@ import {
   checkPage,
   checkTarget,
   decodeEntities,
+  documentFormat,
+  documentHasText,
+  documentName,
   hiddenReason,
   isTextual,
   robotsAllows,
   snapshotMessage,
+  tidyDocument,
   tidyText,
   type PageChecks,
   type PageRead,
@@ -34,6 +38,23 @@ export const SNAPSHOT_LIMITS = {
 };
 
 type Fail = { status: 400 | 403 | 413 | 415 | 424 | 502; error: string; detail?: Record<string, unknown> };
+
+/**
+ * A document to markdown with Workers AI toMarkdown. Embedded images are not described (that would use paid
+ * models); the converter's own failures come back as { error } and the call is not charged.
+ */
+async function convertDocument(ai: Ai, name: string, mime: string, raw: Uint8Array): Promise<{ data: string } | { error: string }> {
+  try {
+    const out = await ai.toMarkdown(
+      { name, blob: new Blob([raw], { type: mime }) },
+      { conversionOptions: { pdf: { metadata: false, images: { convert: false } }, docx: { images: { convert: false } } } },
+    );
+    if (out.format === "error") return { error: String(out.error).slice(0, 200) };
+    return { data: out.data };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message.slice(0, 200) : "converter_error" };
+  }
+}
 const fail = (status: Fail["status"], error: string, detail?: Record<string, unknown>): Fail => ({ status, error, detail });
 
 /** Reads at most `cap` bytes; null if the body is larger. */
@@ -314,7 +335,8 @@ export const snapshot: Service = {
 ## When it does not fit
 
 - Pages behind a login, paywall or bot wall; the fetcher does not run JavaScript.
-- Binary files (PDF, images): refused, not charged.
+- Images and other binaries: refused, not charged. Documents are read: PDF, Word (.docx), Excel (.xlsx, .xls),
+  OpenDocument (.odt, .ods) and Numbers come back as markdown (tables included), at the same price.
 - Paths the site's robots.txt disallows for TabulariumSnapshot or *: refused, not charged.
 
 ## Call
@@ -322,7 +344,7 @@ export const snapshot: Service = {
 POST /snapshot/fetch   ${SNAPSHOT_PRICES.fetch}   body {"url": "https://example.com/", "max_chars": 50000}
 
 Charged only when the site answers 2xx with a text page. Not charged: invalid or non-public URLs (400), robots.txt
-disallow (403), over ${SNAPSHOT_LIMITS.MAX_BYTES / 1024 / 1024} MB (413), non-text content (415), the site's own error status (424, with the status),
+disallow (403), over ${SNAPSHOT_LIMITS.MAX_BYTES / 1024 / 1024} MB (413), non-text content (415), a document the converter could not read or with no text in it, such as a scan (422), the site's own error status (424, with the status),
 network failure or timeout (502). Redirects are followed (up to ${SNAPSHOT_LIMITS.MAX_REDIRECTS}), each hop checked again. Text is capped at
 max_chars (default ${SNAPSHOT_LIMITS.DEFAULT_CHARS}, at most ${SNAPSHOT_LIMITS.MAX_CHARS}); \`truncated\` says whether it was cut, and the signature covers exactly
 the text returned.
@@ -345,7 +367,7 @@ else; it proves what Tabularium's fetcher received at that time.
       path: "/snapshot/fetch",
       price: SNAPSHOT_PRICES.fetch,
       description:
-        "Reads a web page as clean markdown, as a person sees it: hidden text and invisible Unicode are kept out of the text and flagged with a prompt-injection verdict. Includes an Ed25519-signed record (final URL, time, status, sha256 of body and text) that verifies offline. Charged only for 2xx text pages; refused URLs cost nothing.",
+        "Reads a web page as clean markdown, as a person sees it: hidden text and invisible Unicode are kept out of the text and flagged with a prompt-injection verdict. Also reads PDF, Word and Excel files as markdown. Includes an Ed25519-signed record (final URL, time, status, sha256 of body and text) that verifies offline. Charged only for 2xx pages and documents it can read; refused URLs cost nothing.",
       discovery: declareDiscoveryExtension({
         bodyType: "json",
         input: { url: "https://example.com/" },
@@ -368,7 +390,8 @@ else; it proves what Tabularium's fetcher received at that time.
           "400": ERR("Invalid or non-public URL (not charged)"),
           "403": ERR("robots.txt disallows this path (not charged)"),
           "413": ERR("Page larger than 5 MB (not charged)"),
-          "415": ERR("Not a text page (not charged)"),
+          "415": ERR("Not a text page or a supported document (not charged)"),
+          "422": ERR("A document the converter could not read (not charged)"),
           "424": ERR("The site answered with an error status (not charged)"),
           "502": ERR("Network failure, timeout or too many redirects (not charged)"),
         },
@@ -397,7 +420,12 @@ else; it proves what Tabularium's fetcher received at that time.
           await res.body?.cancel();
           return c.json({ error: "upstream_status", upstreamStatus: res.status, finalUrl: finalUrl.href }, 424);
         }
-        if (!isTextual(contentType)) {
+        const doc = documentFormat(contentType, finalUrl.pathname);
+        if (doc && !c.env.AI) {
+          await res.body?.cancel();
+          return c.json({ error: "unsupported_content_type", contentType, note: "documents need the converter, which this deployment does not have" }, 415);
+        }
+        if (!doc && !isTextual(contentType)) {
           await res.body?.cancel();
           return c.json({ error: "unsupported_content_type", contentType }, 415);
         }
@@ -405,11 +433,24 @@ else; it proves what Tabularium's fetcher received at that time.
         if (!raw) return c.json({ error: "too_large", maxBytes: SNAPSHOT_LIMITS.MAX_BYTES }, 413);
         const fetchedAt = Date.now();
 
-        const isHtml = /html/i.test(contentType) || (!contentType && /^\s*</.test(new TextDecoder().decode(raw.slice(0, 256))));
-        const extracted = isHtml
-          ? await htmlToText(raw, contentType)
-          : { text: tidyText(decodeText(raw, contentType)), hidden: "", reasons: [], comments: "", title: "" };
+        let extracted: PageRead & { title: string };
+        if (doc && c.env.AI) {
+          const name = documentName(finalUrl.pathname, doc.ext);
+          const converted = await convertDocument(c.env.AI, name, doc.mime, raw);
+          if ("error" in converted) return c.json({ error: "conversion_failed", format: doc.ext, reason: converted.error }, 422);
+          const text = tidyDocument(converted.data, name);
+          if (!documentHasText(text)) {
+            return c.json({ error: "no_text_in_document", format: doc.ext, note: "nothing to read: likely scanned images or form fields only" }, 422);
+          }
+          extracted = { text, hidden: "", reasons: [], comments: "", title: name };
+        } else {
+          const isHtml = /html/i.test(contentType) || (!contentType && /^\s*</.test(new TextDecoder().decode(raw.slice(0, 256))));
+          extracted = isHtml
+            ? await htmlToText(raw, contentType)
+            : { text: tidyText(decodeText(raw, contentType)), hidden: "", reasons: [], comments: "", title: "" };
+        }
         const { text: seen, checks } = checkPage(extracted);
+        if (doc) checks.note = `${checks.note} Documents are converted as written: text hidden inside them (white text, tiny fonts) is not detected.`;
         const truncated = seen.length > maxChars;
         const text = truncated ? seen.slice(0, maxChars) : seen;
 
