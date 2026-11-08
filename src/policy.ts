@@ -37,4 +37,6 @@ export const PRICES = {
 /** Snapshot service prices (USDC per successful call). */
 export const SNAPSHOT_PRICES = {
   fetch: "$0.005",
+  // Proposed 2026-11-08, waiting on the owner's OK: pocket.network charges $0.005 for table extraction.
+  tables: "$0.005",
 } as const;

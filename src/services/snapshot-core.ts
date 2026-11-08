@@ -330,3 +330,113 @@ export function documentHasText(markdown: string): boolean {
     .replace(/[\s|:-]+/g, "");
   return body.length >= 8;
 }
+
+// --- Tables (POST /snapshot/tables) ---------------------------------------------------------------------------------
+// Pages, documents and CSV files as typed rows. One seller on the Bazaar gets ~2,300 calls a month for this
+// (pocket.network table-extraction, 7 Nov 2026); snapshot adds hidden-row filtering and a signed record.
+
+export interface Table {
+  caption: string;
+  /** The header row when the source marks one (<th> cells, a markdown header, a CSV first row); else empty. */
+  headers: string[];
+  rows: string[][];
+}
+
+/** What a reader collects before tidying: rows of cells, each row flagged when every cell was a header cell. */
+export interface RawTable {
+  caption: string;
+  rows: { cells: { text: string; span: number }[]; header: boolean }[];
+}
+
+export const TABLE_LIMITS = { DEFAULT_TABLES: 20, MAX_TABLES: 100, MAX_ROWS: 2000, MAX_CELL_CHARS: 2000, MAX_COLUMNS: 100 };
+
+const cellText = (s: string) => decodeEntities(s).replace(/\s+/g, " ").trim().slice(0, TABLE_LIMITS.MAX_CELL_CHARS);
+
+/**
+ * Tidies raw tables: whitespace collapsed, colspans kept as empty cells so columns line up, empty rows dropped,
+ * and layout tables (fewer than two rows, or never two columns) dropped. At most `max` tables.
+ */
+export function finishTables(raw: RawTable[], max: number): Table[] {
+  const out: Table[] = [];
+  for (const t of raw) {
+    const rows = t.rows
+      .map((r) => ({
+        header: r.header,
+        cells: r.cells.flatMap((c) => [cellText(c.text), ...Array(Math.max(0, Math.min(c.span, TABLE_LIMITS.MAX_COLUMNS) - 1)).fill("")]).slice(0, TABLE_LIMITS.MAX_COLUMNS),
+      }))
+      .filter((r) => r.cells.some((c) => c !== ""));
+    if (rows.length < 2 || !rows.some((r) => r.cells.length >= 2)) continue;
+    const first = rows[0];
+    const headers = first.header ? first.cells : [];
+    const body = (first.header ? rows.slice(1) : rows).slice(0, TABLE_LIMITS.MAX_ROWS).map((r) => r.cells);
+    out.push({ caption: cellText(t.caption).slice(0, 300), headers, rows: body });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/** Splits one markdown table line into cells ("| a | b |" -> ["a", "b"]). */
+function mdCells(line: string): string[] {
+  const inner = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+  return inner.split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|"));
+}
+
+/** Markdown tables (as the document converter writes them) to raw tables. A line of dashes marks the header. */
+export function markdownTables(md: string): RawTable[] {
+  const lines = md.replace(/\r\n?/g, "\n").split("\n");
+  const tables: RawTable[] = [];
+  let cur: RawTable | null = null;
+  let caption = "";
+  for (const line of lines) {
+    const t = line.trim();
+    if (t.startsWith("|")) {
+      if (!cur) {
+        cur = { caption, rows: [] };
+        tables.push(cur);
+      }
+      if (/^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(t)) {
+        if (cur.rows.length === 1) cur.rows[0].header = true;
+        continue;
+      }
+      cur.rows.push({ cells: mdCells(t).map((text) => ({ text, span: 1 })), header: false });
+    } else {
+      cur = null;
+      if (t) caption = t.replace(/^#+\s*/, "");
+    }
+  }
+  return tables;
+}
+
+/** A CSV file (RFC 4180: quotes, doubled quotes, newlines inside quotes) as one raw table, first row as header. */
+export function csvTable(text: string): RawTable {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"' && cell === "") quoted = true;
+    else if (ch === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+      if (rows.length > TABLE_LIMITS.MAX_ROWS + 1) break;
+    } else cell += ch;
+  }
+  if (cell !== "" || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return { caption: "", rows: rows.map((cells, i) => ({ cells: cells.map((t) => ({ text: t, span: 1 })), header: i === 0 })) };
+}
