@@ -6,7 +6,22 @@ import { SNAPSHOT_PRICES } from "../policy";
 import type { C } from "../core/identity";
 import { signingKey } from "../core/signing";
 import type { Service } from "../core/service";
-import { FETCH_UA, TargetError, checkTarget, decodeEntities, isTextual, robotsAllows, snapshotMessage, tidyText, type Snapshot } from "./snapshot-core";
+import {
+  CHECKS_NOTE,
+  FETCH_UA,
+  TargetError,
+  checkPage,
+  checkTarget,
+  decodeEntities,
+  hiddenReason,
+  isTextual,
+  robotsAllows,
+  snapshotMessage,
+  tidyText,
+  type PageChecks,
+  type PageRead,
+  type Snapshot,
+} from "./snapshot-core";
 
 export const SNAPSHOT_LIMITS = {
   MAX_BYTES: 5 * 1024 * 1024,
@@ -110,24 +125,16 @@ export async function fetchPage(start: URL, selfHost: string): Promise<{ res: Re
 }
 
 const BLOCK = "p,div,section,article,main,aside,header,footer,nav,li,ul,ol,dl,dt,dd,table,tr,h1,h2,h3,h4,h5,h6,pre,blockquote,figure,figcaption,form,hr,br,address,details,summary";
+const BLOCKS = new Set(BLOCK.split(","));
 const SKIP = "script,style,noscript,template,svg,iframe,object,embed,canvas,select,button";
 const NL = "\n";
-
-/** Registers an end-tag handler when the element has one (void elements like <br> throw; we just skip those). */
-function atEnd(e: Element, fn: () => void): void {
-  try {
-    e.onEndTag(fn);
-  } catch {
-    // no end tag
-  }
-}
 
 /**
  * HTML to readable text with HTMLRewriter (streaming, no DOM), in three passes: read the <title>; drop <head>,
  * scripts, styles and other non-text elements; collect the remaining text with line breaks at block elements.
  * Nothing depends on an end tag being present, so sloppy HTML cannot hide the page's text.
  */
-async function htmlToText(bytes: Uint8Array, contentType: string): Promise<{ text: string; title: string }> {
+export async function htmlToText(bytes: Uint8Array, contentType: string): Promise<PageRead & { title: string }> {
   const asResponse = () => new Response(bytes, { headers: { "content-type": contentType || "text/html" } });
   let title = "";
   let titles = 0;
@@ -139,21 +146,56 @@ async function htmlToText(bytes: Uint8Array, contentType: string): Promise<{ tex
     .transform(asResponse())
     .arrayBuffer();
 
+  // Text inside an element a person would not see goes to `hidden` instead of `parts`. Depth is only raised for an
+  // element whose end tag can be watched, so a void element cannot leave the rest of the page marked hidden.
   const parts: string[] = [];
+  const hidden: string[] = [];
+  const reasons = new Set<string>();
+  let hiddenDepth = 0;
+  let comments = "";
+  const out = () => (hiddenDepth > 0 ? hidden : parts);
   const stripped = new HTMLRewriter().on(`head,${SKIP}`, { element: (e) => void e.remove() }).transform(asResponse());
+  // One handler for every element: an element keeps only the last end-tag callback registered on it, so a separate
+  // block-element handler replaced the one that closes a hidden section (found by e2e, 2026-11-07).
   await new HTMLRewriter()
-    .on(BLOCK, {
+    .on("*", {
       element(e) {
-        parts.push(NL);
-        if (/^h[1-6]$/.test(e.tagName)) parts.push("#".repeat(Number(e.tagName[1])) + " ");
-        if (e.tagName === "li") parts.push("- ");
-        atEnd(e, () => void parts.push(NL));
+        const why = hiddenReason(e.getAttribute("style"), e.hasAttribute("hidden"));
+        const block = BLOCKS.has(e.tagName);
+        if (block) {
+          out().push(NL);
+          if (/^h[1-6]$/.test(e.tagName)) out().push("#".repeat(Number(e.tagName[1])) + " ");
+          if (e.tagName === "li") out().push("- ");
+        }
+        if (!why && !block) return;
+        try {
+          e.onEndTag(() => {
+            if (block) out().push(NL);
+            if (why) hiddenDepth = Math.max(0, hiddenDepth - 1);
+          });
+        } catch {
+          return; // void element (<br>, <img hidden>): no end tag and no text inside
+        }
+        if (why) {
+          hiddenDepth++;
+          reasons.add(why);
+          hidden.push(NL);
+        }
       },
     })
-    .onDocument({ text: (t) => void parts.push(t.text) })
+    .onDocument({
+      text: (t) => void out().push(t.text),
+      comments: (c) => void (comments.length < 20_000 && (comments += c.text + NL)),
+    })
     .transform(stripped)
     .arrayBuffer();
-  return { text: tidyText(decodeEntities(parts.join(""))), title: decodeEntities(title).replace(/\s+/g, " ").trim().slice(0, 300) };
+  return {
+    text: tidyText(decodeEntities(parts.join(""))),
+    hidden: tidyText(decodeEntities(hidden.join(""))),
+    reasons: [...reasons].sort(),
+    comments: decodeEntities(comments),
+    title: decodeEntities(title).replace(/\s+/g, " ").trim().slice(0, 300),
+  };
 }
 
 function decodeText(bytes: Uint8Array, contentType: string): string {
@@ -215,20 +257,57 @@ const EXAMPLE_SNAPSHOT: Snapshot = {
   truncated: false,
 };
 
+const EXAMPLE_CHECKS: PageChecks = {
+  verdict: "clean",
+  hiddenText: { chars: 0, reasons: [], samples: [], separated: true },
+  invisible: { tagCharsRemoved: 0, bidiControlsRemoved: 0, zeroWidthKept: 0 },
+  steering: [],
+  note: CHECKS_NOTE,
+};
+const CHECKS_SCHEMA = {
+  type: "object",
+  description: "Advisory, not signed: what the page hid from a person and whether it tries to steer a model.",
+  properties: {
+    verdict: { type: "string", enum: ["clean", "review", "suspicious"] },
+    hiddenText: {
+      type: "object",
+      properties: { chars: { type: "integer" }, reasons: { type: "array", items: { type: "string" } }, samples: { type: "array", items: { type: "string" } }, separated: { type: "boolean" } },
+    },
+    invisible: { type: "object", properties: { tagCharsRemoved: { type: "integer" }, bidiControlsRemoved: { type: "integer" }, zeroWidthKept: { type: "integer" } } },
+    steering: { type: "array", items: { type: "object", properties: { where: { type: "string", enum: ["visible", "hidden", "comment"] }, phrase: { type: "string" } } } },
+    note: { type: "string" },
+  },
+};
+
 export const snapshot: Service = {
   id: "snapshot",
   serviceName: "Tabularium Snapshot",
-  tags: ["web-fetch", "scraping", "verifiable", "signed", "citations"],
-  summary: "Fetch a public web page as clean text, with a server-signed record of what was served, from where, and when.",
+  tags: ["web-fetch", "markdown", "prompt-injection", "verifiable", "signed"],
+  summary:
+    "Read a public web page as clean markdown, the way a person sees it: hidden text and invisible characters are separated out and flagged, and the read is server-signed.",
   llms: (env, origin) => `# Tabularium Snapshot
 
-> Fetch a public web page as clean text, with an Ed25519-signed record of what the site served, from which final
-> URL, and when. Paid per call in USDC over x402, from the same wallet as Tabularium memory.
+> Read a public web page as clean markdown, the way a person sees it. Text the page hides from people (display:none,
+> zero-size, off-screen, invisible Unicode) is kept out of the text and reported, with any instruction-like phrases
+> and a verdict, so a hidden prompt injection does not reach your model as page content. Every read carries an
+> Ed25519-signed record of what was served, from which final URL, and when. Paid per call in USDC over x402.
 
 ## When it fits
 
+- An agent reads pages it did not choose (search results, links in email, user-supplied URLs) and should not take
+  orders from them: check \`checks.verdict\` before acting on the text.
 - An agent needs a page's content and someone may later ask "what did the page say when you read it?": research
   notes, citations, compliance, price or policy checks, disputes.
+
+## What \`checks\` says
+
+- verdict: \`clean\` (nothing found), \`review\` (instruction-like phrases in the visible text, common on pages
+  about AI), \`suspicious\` (instruction-like phrases in hidden text or HTML comments, chat-template tokens, Unicode
+  tag characters or bidi overrides).
+- hiddenText: how many characters were hidden, why, and up to three samples. Not in \`text\`.
+- invisible: tag characters and bidi controls removed from \`text\`; zero-width characters kept and counted.
+- It reads inline styles and attributes only: text hidden by a stylesheet class or by a script is not detected.
+  \`checks\` is advisory and not covered by the signature; \`text\` is.
 - The signed record (sha256 of the raw body and of the returned text, final URL after redirects, time, status) can
   be stored in Tabularium memory or handed to anyone, and checked offline with the public key in /menu.
 
@@ -266,21 +345,26 @@ else; it proves what Tabularium's fetcher received at that time.
       path: "/snapshot/fetch",
       price: SNAPSHOT_PRICES.fetch,
       description:
-        "Returns the page's readable text plus an Ed25519-signed record (final URL after redirects, fetch time, status, sha256 of the body and of the text) that verifies offline. Charged only for 2xx text pages; refused URLs cost nothing.",
+        "Reads a web page as clean markdown, as a person sees it: hidden text and invisible Unicode are kept out of the text and flagged with a prompt-injection verdict. Includes an Ed25519-signed record (final URL, time, status, sha256 of body and text) that verifies offline. Charged only for 2xx text pages; refused URLs cost nothing.",
       discovery: declareDiscoveryExtension({
         bodyType: "json",
         input: { url: "https://example.com/" },
         inputSchema: SCHEMA,
-        output: { example: { ok: true, snapshot: EXAMPLE_SNAPSHOT, text: "# Example Domain\n\nThis domain is for use in documentation examples...", sig: "<base64 Ed25519 signature>" } },
+        output: {
+          example: { ok: true, snapshot: EXAMPLE_SNAPSHOT, text: "# Example Domain\n\nThis domain is for use in documentation examples...", sig: "<base64 Ed25519 signature>", checks: EXAMPLE_CHECKS },
+        },
       }),
       menu: { call: "POST /snapshot/fetch", price: SNAPSHOT_PRICES.fetch, body: { url: "string", max_chars: "integer, optional" } },
       openapi: {
         operationId: "snapshotFetch",
-        summary: "Fetch a web page as text, with a signed record of what was served and when",
+        summary: "Read a web page as markdown as a person sees it, hidden text flagged, with a signed record",
         description: "Charged only when the site answers 2xx with a text page. Verify offline with verifier/verify.mjs --snapshot.",
         requestBody: { required: true, content: { "application/json": { schema: SCHEMA, example: { url: "https://example.com/" } } } },
         responses: {
-          "200": json({ type: "object", properties: { ok: { type: "boolean" }, snapshot: SNAPSHOT_SCHEMA, text: { type: "string" }, sig: { type: "string", description: "base64 Ed25519" } } }, "The page text and its signed record"),
+          "200": json(
+            { type: "object", properties: { ok: { type: "boolean" }, snapshot: SNAPSHOT_SCHEMA, text: { type: "string" }, sig: { type: "string", description: "base64 Ed25519" }, checks: CHECKS_SCHEMA } },
+            "The visible page text, its signed record, and the hidden-text checks",
+          ),
           "400": ERR("Invalid or non-public URL (not charged)"),
           "403": ERR("robots.txt disallows this path (not charged)"),
           "413": ERR("Page larger than 5 MB (not charged)"),
@@ -322,9 +406,12 @@ else; it proves what Tabularium's fetcher received at that time.
         const fetchedAt = Date.now();
 
         const isHtml = /html/i.test(contentType) || (!contentType && /^\s*</.test(new TextDecoder().decode(raw.slice(0, 256))));
-        const extracted = isHtml ? await htmlToText(raw, contentType) : { text: tidyText(decodeText(raw, contentType)), title: "" };
-        const truncated = extracted.text.length > maxChars;
-        const text = truncated ? extracted.text.slice(0, maxChars) : extracted.text;
+        const extracted = isHtml
+          ? await htmlToText(raw, contentType)
+          : { text: tidyText(decodeText(raw, contentType)), hidden: "", reasons: [], comments: "", title: "" };
+        const { text: seen, checks } = checkPage(extracted);
+        const truncated = seen.length > maxChars;
+        const text = truncated ? seen.slice(0, maxChars) : seen;
 
         const record: Snapshot = {
           v: 1,
@@ -342,7 +429,7 @@ else; it proves what Tabularium's fetcher received at that time.
           truncated,
         };
         const sig = b64encode(new Uint8Array(await crypto.subtle.sign({ name: "Ed25519" }, sk, new TextEncoder().encode(snapshotMessage(record)))));
-        return c.json({ ok: true, snapshot: record, text, sig, publicKeyHex: c.env.SIGNING_PUBKEY_HEX });
+        return c.json({ ok: true, snapshot: record, text, sig, publicKeyHex: c.env.SIGNING_PUBKEY_HEX, checks });
       },
     },
   ],
