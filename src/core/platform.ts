@@ -12,7 +12,7 @@ import { CDP_FACILITATOR_URL, cdpAuthHeaders } from "../cdp";
 import { openApi } from "../openapi";
 import { CAIP2, PAYMENT_HEADER, isExcluded, payerOf, paymentNonce, walletStub, type C } from "./identity";
 import { callInput, micro, type PaidCall, type Service } from "./service";
-import { ROBOT_FAMILY, TEST_HEADER, clientFamily, funnelKind } from "./funnel";
+import { ROBOT_FAMILY, TEST_HEADER, carriesRequest, clientFamily, funnelKind } from "./funnel";
 import { MCP_PATH, mcpTools } from "../mcp";
 
 // Higher-priced calls settle UPFRONT (before the handler): each is worth more than the gas it costs to make a
@@ -97,8 +97,35 @@ async function recordCharge(c: C, paid: Paid, ts: number): Promise<void> {
   await statsStub(c.env).record(id, paid.service, paid.call.name, micro(paid.call.price), ts);
 }
 
+/** The example this call publishes in its Bazaar listing: probes resend it, so it does not count as a request. */
+function publishedExample(call: PaidCall): unknown {
+  const input = (call.discovery as { bazaar?: { info?: { input?: { body?: unknown; queryParams?: unknown } } } }).bazaar?.info?.input;
+  return input?.body ?? input?.queryParams;
+}
+
+/**
+ * Whether an unpaid request carried a real request (docs/PRICING.md). Read before the paywall answers, only when no
+ * payment was sent, so a paid call's body is never touched here. Hono caches the body, so reading it is harmless.
+ */
+async function askedFor(c: C, paid: Paid): Promise<boolean> {
+  if (c.req.header(PAYMENT_HEADER)) return false;
+  const method = c.req.method;
+  const query = new URL(c.req.url).search;
+  if (method === "GET" || method === "HEAD") return carriesRequest({ method, query, body: undefined, example: publishedExample(paid.call) });
+  const size = Number(c.req.header("content-length") ?? "NaN");
+  if (Number.isFinite(size) && size > 65_536) return true; // a large body is not a probe
+  let body: unknown;
+  try {
+    const text = await c.req.text();
+    body = text ? JSON.parse(text) : undefined;
+  } catch {
+    body = undefined;
+  }
+  return carriesRequest({ method, query, body, example: publishedExample(paid.call) });
+}
+
 /** Records one funnel event (quoted / paid / rejected). Our own marked test runs and test wallets are kept out. */
-async function recordFunnel(c: C, paid: Paid, status: number, charged: boolean, ts: number): Promise<void> {
+async function recordFunnel(c: C, paid: Paid, status: number, charged: boolean, ts: number, asked = false): Promise<void> {
   const hasPayment = !!c.req.header(PAYMENT_HEADER);
   const kind = funnelKind({ status, hasPayment, charged });
   if (!kind) return;
@@ -108,7 +135,7 @@ async function recordFunnel(c: C, paid: Paid, status: number, charged: boolean, 
   const family = clientFamily(ua);
   // A robot is a quote but not an asker: askers are the clients that might pay.
   const asker = kind === "quoted" && family !== ROBOT_FAMILY ? `${c.req.header("cf-connecting-ip") ?? ""}\n${ua}` : undefined;
-  await statsStub(c.env).funnel(paid.service, paid.call.name, kind, family, ts, asker);
+  await statsStub(c.env).funnel(paid.service, paid.call.name, kind, family, ts, asker, kind === "quoted" && asked);
 }
 
 export function createPlatform(services: Service[], opts: { paywall: boolean }) {
@@ -129,6 +156,7 @@ export function createPlatform(services: Service[], opts: { paywall: boolean }) 
         later(c, recordFunnel(c, paid, refused.status, false, Date.now()));
         return refused;
       }
+      const asked = await askedFor(c, paid);
       // The middleware either returns its own response (402, errors) or sets c.res after settling: pass both through.
       const out = await (await paywallFor(c.env, services))(c, next);
       const res = out instanceof Response ? out : c.res;
@@ -136,7 +164,7 @@ export function createPlatform(services: Service[], opts: { paywall: boolean }) 
       const charged = res.status < 400 && !!res.headers.get("PAYMENT-RESPONSE");
       const now = Date.now();
       if (charged) later(c, recordCharge(c, paid, now));
-      later(c, recordFunnel(c, paid, res.status, charged, now));
+      later(c, recordFunnel(c, paid, res.status, charged, now, asked));
       return out;
     });
   } else {

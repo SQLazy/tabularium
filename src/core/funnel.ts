@@ -53,3 +53,36 @@ export const ROBOT_FAMILY = "bot";
 
 /** Our own test runs mark their requests with this header so they never count as demand. */
 export const TEST_HEADER = "x-tabularium-test";
+
+/**
+ * Whether a quoted request carried a real request: what an agent sends when it means to use the call, as opposed to
+ * a probe checking the paywall. Robots that list x402 services send nothing, an empty body, or the call's own
+ * published example (from /openapi.json or the Bazaar listing), so those do not count. This is the number that
+ * tells "agents saw the price and left" apart from "nobody came": see docs/PRICING.md.
+ */
+export function carriesRequest(r: { method: string; query: string; body: unknown; example?: unknown }): boolean {
+  if (r.method === "GET" || r.method === "HEAD") {
+    const params = new URLSearchParams(r.query);
+    const real = [...params.values()].some((v) => v.trim() !== "");
+    if (!real) return false;
+    const ex = r.example && typeof r.example === "object" ? (r.example as Record<string, unknown>) : null;
+    return !ex || [...params.entries()].some(([k, v]) => String(ex[k] ?? "") !== v);
+  }
+  if (!r.body || typeof r.body !== "object" || Array.isArray(r.body)) return false;
+  const filled = Object.values(r.body as Record<string, unknown>).some(
+    (v) => (typeof v === "string" && v.trim() !== "") || typeof v === "number" || (typeof v === "object" && v !== null),
+  );
+  if (!filled) return false;
+  return r.example === undefined || stableJson(r.body) !== stableJson(r.example);
+}
+
+function stableJson(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(stableJson).join(",")}]`;
+  if (v && typeof v === "object") {
+    return `{${Object.keys(v as object)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${stableJson((v as Record<string, unknown>)[k])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(v);
+}
