@@ -5,6 +5,7 @@
 // USDC's AuthorizationUsed event. Writes <outDir>/ticker.json and <outDir>/sellers.json (payee -> name).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { sellerDemand, walletConcentration } from "./demand.mjs";
+import { node } from "./rpc.mjs";
 
 const OUT = process.argv[2] ?? "ayb-out";
 const RPC = process.env.AYB_RPC ?? "https://base-rpc.publicnode.com";
@@ -16,30 +17,8 @@ const SELLERS_MAX_AGE_MS = 24 * 3600_000;
 
 mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-async function rpc(method, params, tries = 4) {
-  for (let i = 0; ; i++) {
-    try {
-      const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(60_000) });
-      const j = await r.json();
-      if (j.error) throw Object.assign(new Error(j.error.message ?? JSON.stringify(j.error)), { rpc: true });
-      return j.result;
-    } catch (err) {
-      if (err.rpc || i >= tries - 1) throw err;
-      await sleep(2000 * (i + 1));
-    }
-  }
-}
-
-/** eth_getLogs over [from, to], halving the range whenever the node says it is too wide or returns too much. */
-async function logs(filter, from, to) {
-  try {
-    return await rpc("eth_getLogs", [{ ...filter, fromBlock: "0x" + from.toString(16), toBlock: "0x" + to.toString(16) }]);
-  } catch (err) {
-    if (!/exceed|too many|range|limit/i.test(err.message) || from >= to) throw err;
-    const mid = Math.floor((from + to) / 2);
-    return [...(await logs(filter, from, mid)), ...(await logs(filter, mid + 1, to))];
-  }
-}
+// Retries a busy node and halves a range it cannot answer: see rpc.mjs.
+const { rpc, logs } = node(RPC, { log: (line) => console.log(`node: ${line}`) });
 
 // ---- 1. Bazaar payees (refreshed once a day; the full list is ~90k resources) --------------------------------
 async function sellers() {
