@@ -1,77 +1,77 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-12T05:16:08.000Z",
+  "asOf": "2026-11-12T06:24:56.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 56307763,
-    "toBlock": 56350962
+    "fromBlock": 56328406,
+    "toBlock": 56371605
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 245.78,
-  "payments": 3821,
-  "payers": 686,
-  "activeSellers": 122,
+  "usd": 226.38,
+  "payments": 3340,
+  "payers": 640,
+  "activeSellers": 113,
   "listedSellers": 1973,
   "biggest": {
     "usd": 21.35,
     "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    17.98,
-    4.24,
-    7.63,
-    27.89,
-    5.54,
-    12.39,
-    16.19,
-    4.15,
-    6.38,
-    2.48,
-    7.07,
-    3.13,
+    2.36,
+    44.05,
+    20.87,
+    2.12,
+    7.08,
+    5.61,
+    2.15,
+    2.49,
+    2.45,
+    11.45,
+    23.15,
+    7.26,
+    2.63,
+    16.78,
+    1.69,
+    17.64,
+    3.74,
+    6.71,
+    7.35,
+    2.85,
     9.67,
-    55.11,
-    2.35,
-    1.67,
-    11.31,
-    1.18,
-    2.23,
-    3.64,
-    1.58,
-    27.47,
-    12.34,
-    2.16
+    4.95,
+    10.48,
+    10.89
   ],
   "top": [
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 113,
-      "payments": 37
+      "usd": 120.5,
+      "payments": 38
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 61.31,
-      "payments": 5
+      "usd": 37.42,
+      "payments": 3
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 16.88,
-      "payments": 844
+      "usd": 16.74,
+      "payments": 837
     },
     {
-      "seller": "X Pay",
-      "host": "www.api-xpay.com",
-      "usd": 10.31,
-      "payments": 63
+      "seller": "Laso Finance",
+      "host": "laso.finance",
+      "usd": 15,
+      "payments": 2
     },
     {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 9.07,
-      "payments": 876
+      "usd": 9.33,
+      "payments": 887
     },
     {
       "seller": "Drip",
@@ -82,114 +82,114 @@
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 5.45,
-      "payments": 109
+      "usd": 4.3,
+      "payments": 86
     },
     {
-      "seller": "BlockRun.AI",
-      "host": "blockrun.ai",
-      "usd": 2.09,
-      "payments": 68
+      "seller": "StableEnrich",
+      "host": "stableenrich.dev",
+      "usd": 2.12,
+      "payments": 165
     },
     {
       "seller": "Pocket Network",
       "host": "agent.pocket.network",
-      "usd": 2.07,
-      "payments": 415
+      "usd": 2.04,
+      "payments": 408
     },
     {
-      "seller": "Apify",
-      "host": "agi.apify.com",
-      "usd": 2,
-      "payments": 2
+      "seller": "Weather Forecast & Air Quality",
+      "host": "api.kadec0.xyz",
+      "usd": 1.33,
+      "payments": 61
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 9.07,
-      "payments": 876,
-      "wallets": 403,
-      "cameBack": 394,
-      "topWalletShare": 0.005
+      "usd": 9.33,
+      "payments": 887,
+      "wallets": 404,
+      "cameBack": 396,
+      "topWalletShare": 0.01
     },
     {
       "seller": "Clash of Coins",
-      "usd": 16.88,
-      "payments": 844,
-      "wallets": 393,
-      "cameBack": 386,
+      "usd": 16.74,
+      "payments": 837,
+      "wallets": 395,
+      "cameBack": 389,
       "topWalletShare": 0.004
     },
     {
       "seller": "Pocket Network",
-      "usd": 2.07,
-      "payments": 415,
+      "usd": 2.04,
+      "payments": 408,
       "wallets": 37,
       "cameBack": 34,
-      "topWalletShare": 0.07
+      "topWalletShare": 0.066
     },
     {
       "seller": "x402.dtelecom.org",
-      "usd": 113,
-      "payments": 37,
-      "wallets": 12,
-      "cameBack": 8,
-      "topWalletShare": 0.243
+      "usd": 120.5,
+      "payments": 38,
+      "wallets": 13,
+      "cameBack": 9,
+      "topWalletShare": 0.237
     },
     {
       "seller": "BlockRun.AI",
-      "usd": 2.09,
-      "payments": 68,
-      "wallets": 12,
-      "cameBack": 6,
-      "topWalletShare": 0.338
-    },
-    {
-      "seller": "api.onesource.io",
-      "usd": 0.55,
-      "payments": 55,
-      "wallets": 9,
-      "cameBack": 6,
-      "topWalletShare": 0.218
+      "usd": 0.92,
+      "payments": 35,
+      "wallets": 10,
+      "cameBack": 5,
+      "topWalletShare": 0.4
     },
     {
       "seller": "StableEnrich",
-      "usd": 1.9,
-      "payments": 187,
-      "wallets": 8,
-      "cameBack": 5,
-      "topWalletShare": 0.572
+      "usd": 2.12,
+      "payments": 165,
+      "wallets": 5,
+      "cameBack": 4,
+      "topWalletShare": 0.509
     },
     {
       "seller": "Exa",
-      "usd": 1.05,
-      "payments": 230,
-      "wallets": 4,
+      "usd": 0.64,
+      "payments": 93,
+      "wallets": 5,
       "cameBack": 3,
-      "topWalletShare": 0.635
+      "topWalletShare": 0.785
+    },
+    {
+      "seller": "Glassnode",
+      "usd": 0.31,
+      "payments": 7,
+      "wallets": 4,
+      "cameBack": 2,
+      "topWalletShare": 0.429
     },
     {
       "seller": "Nansen",
-      "usd": 0.32,
-      "payments": 12,
-      "wallets": 6,
-      "cameBack": 3,
-      "topWalletShare": 0.417
-    },
-    {
-      "seller": "Dump Risk (Exit Liquidity)",
-      "usd": 0.62,
-      "payments": 12,
+      "usd": 0.15,
+      "payments": 7,
       "wallets": 2,
       "cameBack": 2,
-      "topWalletShare": 0.833
+      "topWalletShare": 0.714
+    },
+    {
+      "seller": "x402.twit.sh",
+      "usd": 0.06,
+      "payments": 8,
+      "wallets": 3,
+      "cameBack": 2,
+      "topWalletShare": 0.5
     }
   ],
   "wallets": {
-    "wallets": 686,
-    "paidOnce": 186,
-    "top10Share": 0.27
+    "wallets": 640,
+    "paidOnce": 147,
+    "top10Share": 0.233
   },
-  "tookMs": 35216
+  "tookMs": 27740
 }
