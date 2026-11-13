@@ -1,133 +1,133 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-13T04:18:03.000Z",
+  "asOf": "2026-11-13T05:15:36.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 56722339,
-    "toBlock": 56765538
+    "fromBlock": 56739603,
+    "toBlock": 56782802
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 2417.67,
-  "payments": 11965,
-  "payers": 640,
-  "activeSellers": 122,
+  "usd": 2370.15,
+  "payments": 11804,
+  "payers": 641,
+  "activeSellers": 133,
   "listedSellers": 1977,
   "biggest": {
     "usd": 2000.19,
     "seller": "api.cleave.fi"
   },
   "perHourUsd": [
-    22.13,
-    17.4,
-    8.7,
-    11.95,
-    10.72,
-    27.6,
-    24.97,
-    21.4,
-    23.04,
-    40.24,
-    9.35,
-    10.25,
-    11.57,
-    8.94,
-    26.28,
-    19.77,
-    9.12,
-    20.68,
-    18.04,
-    22.36,
-    2010.67,
-    11.45,
-    16.59,
-    14.45
+    9.68,
+    9.82,
+    11.35,
+    9.54,
+    9.87,
+    32.1,
+    13.7,
+    20.37,
+    9.27,
+    31.35,
+    2008.66,
+    13.1,
+    16.98,
+    12.87,
+    8.73,
+    18.85,
+    13.12,
+    13.93,
+    12.01,
+    15.46,
+    12.86,
+    30.43,
+    10.45,
+    25.67
   ],
   "top": [
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 2053.95,
+      "usd": 2035.26,
       "payments": 4
     },
     {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 185.23,
-      "payments": 9498
+      "usd": 186.8,
+      "payments": 9547
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 125.1,
+      "usd": 107,
       "payments": 36
     },
     {
       "seller": "win.oneshotagent.com",
       "host": "win.oneshotagent.com",
-      "usd": 18.15,
-      "payments": 150
+      "usd": 8.75,
+      "payments": 40
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 9.54,
-      "payments": 477
-    },
-    {
-      "seller": "Weather Forecast & Air Quality",
-      "host": "api.kadec0.xyz",
-      "usd": 3.47,
-      "payments": 170
-    },
-    {
-      "seller": "StableEnrich",
-      "host": "stableenrich.dev",
-      "usd": 3.45,
-      "payments": 97
+      "usd": 8.46,
+      "payments": 423
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 2.75,
-      "payments": 55
+      "usd": 3.8,
+      "payments": 76
+    },
+    {
+      "seller": "Weather Forecast & Air Quality",
+      "host": "api.kadec0.xyz",
+      "usd": 2.34,
+      "payments": 111
     },
     {
       "seller": "Pocket Network",
       "host": "agent.pocket.network",
-      "usd": 2.01,
-      "payments": 402
+      "usd": 2.07,
+      "payments": 414
     },
     {
       "seller": "Apify",
       "host": "agi.apify.com",
       "usd": 2,
       "payments": 2
+    },
+    {
+      "seller": "Storm Station 247",
+      "host": "stormstation247.com",
+      "usd": 1.39,
+      "payments": 139
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 185.23,
-      "payments": 9498,
-      "wallets": 401,
-      "cameBack": 126,
-      "topWalletShare": 0.121
+      "usd": 186.8,
+      "payments": 9547,
+      "wallets": 381,
+      "cameBack": 86,
+      "topWalletShare": 0.115
     },
     {
       "seller": "Clash of Coins",
-      "usd": 9.54,
-      "payments": 477,
-      "wallets": 377,
-      "cameBack": 100,
-      "topWalletShare": 0.004
+      "usd": 8.46,
+      "payments": 423,
+      "wallets": 365,
+      "cameBack": 58,
+      "topWalletShare": 0.005
     },
     {
       "seller": "Pocket Network",
-      "usd": 2.01,
-      "payments": 402,
-      "wallets": 35,
-      "cameBack": 33,
-      "topWalletShare": 0.067
+      "usd": 2.07,
+      "payments": 414,
+      "wallets": 36,
+      "cameBack": 34,
+      "topWalletShare": 0.072
     },
     {
       "seller": "api.onesource.io",
@@ -139,57 +139,57 @@
     },
     {
       "seller": "x402.dtelecom.org",
-      "usd": 125.1,
+      "usd": 107,
       "payments": 36,
-      "wallets": 13,
-      "cameBack": 9,
-      "topWalletShare": 0.25
+      "wallets": 12,
+      "cameBack": 8,
+      "topWalletShare": 0.278
     },
     {
       "seller": "BlockRun.AI",
-      "usd": 1.06,
-      "payments": 82,
-      "wallets": 10,
-      "cameBack": 7,
-      "topWalletShare": 0.305
-    },
-    {
-      "seller": "win.oneshotagent.com",
-      "usd": 18.15,
-      "payments": 150,
-      "wallets": 6,
-      "cameBack": 5,
-      "topWalletShare": 0.387
+      "usd": 1.2,
+      "payments": 106,
+      "wallets": 12,
+      "cameBack": 8,
+      "topWalletShare": 0.255
     },
     {
       "seller": "StableEnrich",
-      "usd": 3.45,
-      "payments": 97,
-      "wallets": 6,
-      "cameBack": 5,
-      "topWalletShare": 0.68
+      "usd": 1.15,
+      "payments": 91,
+      "wallets": 7,
+      "cameBack": 6,
+      "topWalletShare": 0.78
+    },
+    {
+      "seller": "Nansen",
+      "usd": 0.56,
+      "payments": 16,
+      "wallets": 5,
+      "cameBack": 4,
+      "topWalletShare": 0.313
     },
     {
       "seller": "Glassnode",
-      "usd": 0.5,
-      "payments": 10,
-      "wallets": 6,
+      "usd": 0.55,
+      "payments": 11,
+      "wallets": 7,
       "cameBack": 4,
-      "topWalletShare": 0.2
+      "topWalletShare": 0.182
     },
     {
-      "seller": "Weather Forecast & Air Quality",
-      "usd": 3.47,
-      "payments": 170,
-      "wallets": 2,
-      "cameBack": 2,
-      "topWalletShare": 0.988
+      "seller": "Exa",
+      "usd": 0.08,
+      "payments": 12,
+      "wallets": 5,
+      "cameBack": 3,
+      "topWalletShare": 0.333
     }
   ],
   "wallets": {
-    "wallets": 640,
-    "paidOnce": 119,
-    "top10Share": 0.666
+    "wallets": 641,
+    "paidOnce": 144,
+    "top10Share": 0.672
   },
-  "tookMs": 98617
+  "tookMs": 191758
 }
