@@ -1,71 +1,71 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-13T11:14:28.000Z",
+  "asOf": "2026-11-13T12:21:11.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 56847264,
-    "toBlock": 56890463
+    "fromBlock": 56867279,
+    "toBlock": 56910478
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 971.36,
-  "payments": 9518,
-  "payers": 928,
-  "activeSellers": 145,
+  "usd": 2568.69,
+  "payments": 9183,
+  "payers": 942,
+  "activeSellers": 150,
   "listedSellers": 1977,
   "biggest": {
-    "usd": 223.39,
+    "usd": 1000.02,
     "seller": "Bitrefill"
   },
   "perHourUsd": [
-    9.67,
-    12.49,
-    11.51,
-    70.55,
-    9.86,
-    104.61,
-    8.17,
-    16.46,
-    10.57,
-    15.25,
-    18.39,
-    115.64,
-    7.32,
-    18.88,
-    14.15,
-    32.52,
-    260.01,
-    17.14,
-    17.97,
-    9.78,
-    7.79,
-    142.93,
+    115.97,
+    16.97,
+    8.84,
+    15.42,
+    32.98,
+    261.15,
+    18.25,
+    16.16,
+    7.54,
+    7.76,
+    142.87,
     4.1,
-    35.59
+    35.91,
+    4.66,
+    22.6,
+    1014.61,
+    304.52,
+    7.29,
+    24.94,
+    6.85,
+    452.56,
+    6.87,
+    14.84,
+    25.03
   ],
   "top": [
     {
       "seller": "Bitrefill",
       "host": "api.bitrefill.com",
-      "usd": 480.86,
-      "payments": 10
+      "usd": 1907.06,
+      "payments": 18
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 162.92,
+      "usd": 328.29,
       "payments": 3
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 125.2,
-      "payments": 61
+      "usd": 138.4,
+      "payments": 66
     },
     {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 112.32,
-      "payments": 5770
+      "usd": 104.37,
+      "payments": 5380
     },
     {
       "seller": "BotPay NFT Mint",
@@ -76,14 +76,14 @@
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 12.32,
-      "payments": 464
+      "usd": 12.33,
+      "payments": 466
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 6.22,
-      "payments": 311
+      "usd": 6.6,
+      "payments": 332
     },
     {
       "seller": "Apify",
@@ -92,104 +92,104 @@
       "payments": 4
     },
     {
-      "seller": "keyring-agent.blockchhub.link",
-      "host": "keyring-agent.blockchhub.link",
-      "usd": 5.5,
-      "payments": 110
+      "seller": "taiwan-business-day-live.wuryan529.workers.dev",
+      "host": "taiwan-business-day-live.wuryan529.workers.dev",
+      "usd": 5.11,
+      "payments": 1022
     },
     {
       "seller": "Laso Finance",
       "host": "laso.finance",
       "usd": 5,
-      "payments": 3
+      "payments": 4
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 112.32,
-      "payments": 5770,
-      "wallets": 335,
-      "cameBack": 61,
-      "topWalletShare": 0.105
+      "usd": 104.37,
+      "payments": 5380,
+      "wallets": 342,
+      "cameBack": 62,
+      "topWalletShare": 0.128
     },
     {
       "seller": "Pocket Network",
-      "usd": 1.98,
-      "payments": 397,
-      "wallets": 34,
+      "usd": 1.93,
+      "payments": 386,
+      "wallets": 35,
       "cameBack": 33,
-      "topWalletShare": 0.078
+      "topWalletShare": 0.08
     },
     {
       "seller": "Clash of Coins",
-      "usd": 6.22,
-      "payments": 311,
-      "wallets": 299,
-      "cameBack": 12,
+      "usd": 6.6,
+      "payments": 332,
+      "wallets": 312,
+      "cameBack": 20,
       "topWalletShare": 0.006
     },
     {
       "seller": "x402.dtelecom.org",
-      "usd": 125.2,
-      "payments": 61,
+      "usd": 138.4,
+      "payments": 66,
       "wallets": 18,
-      "cameBack": 9,
-      "topWalletShare": 0.197
+      "cameBack": 13,
+      "topWalletShare": 0.167
     },
     {
       "seller": "StableEnrich",
-      "usd": 1.1,
-      "payments": 58,
+      "usd": 1.27,
+      "payments": 75,
       "wallets": 7,
       "cameBack": 6,
-      "topWalletShare": 0.466
+      "topWalletShare": 0.507
+    },
+    {
+      "seller": "Grokzilla x402 Micro Pay",
+      "usd": 0.11,
+      "payments": 13,
+      "wallets": 5,
+      "cameBack": 4,
+      "topWalletShare": 0.308
+    },
+    {
+      "seller": "HALOWERK Energy",
+      "usd": 0.05,
+      "payments": 16,
+      "wallets": 6,
+      "cameBack": 4,
+      "topWalletShare": 0.313
+    },
+    {
+      "seller": "WickedAPI Trading Data API",
+      "usd": 0.02,
+      "payments": 10,
+      "wallets": 4,
+      "cameBack": 4,
+      "topWalletShare": 0.3
     },
     {
       "seller": "BlockRun.AI",
-      "usd": 3.51,
-      "payments": 197,
-      "wallets": 7,
-      "cameBack": 4,
-      "topWalletShare": 0.863
-    },
-    {
-      "seller": "Perp funding rate and history",
-      "usd": 0.76,
-      "payments": 59,
-      "wallets": 4,
+      "usd": 2.78,
+      "payments": 176,
+      "wallets": 12,
       "cameBack": 3,
-      "topWalletShare": 0.78
+      "topWalletShare": 0.824
     },
     {
       "seller": "GEDX402 Chat",
-      "usd": 0.55,
-      "payments": 15,
-      "wallets": 2,
-      "cameBack": 2,
-      "topWalletShare": 0.867
-    },
-    {
-      "seller": "x402.twit.sh",
-      "usd": 0.51,
-      "payments": 75,
+      "usd": 0.44,
+      "payments": 14,
       "wallets": 4,
       "cameBack": 2,
-      "topWalletShare": 0.933
-    },
-    {
-      "seller": "Nansen",
-      "usd": 0.31,
-      "payments": 11,
-      "wallets": 4,
-      "cameBack": 2,
-      "topWalletShare": 0.455
+      "topWalletShare": 0.714
     }
   ],
   "wallets": {
-    "wallets": 928,
-    "paidOnce": 497,
-    "top10Share": 0.466
+    "wallets": 942,
+    "paidOnce": 507,
+    "top10Share": 0.512
   },
-  "tookMs": 51861
+  "tookMs": 40242
 }
