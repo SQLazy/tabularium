@@ -1,95 +1,95 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-13T12:21:11.000Z",
+  "asOf": "2026-11-13T13:15:31.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 56867279,
-    "toBlock": 56910478
+    "fromBlock": 56883581,
+    "toBlock": 56926780
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 2568.69,
-  "payments": 9183,
-  "payers": 942,
-  "activeSellers": 150,
+  "usd": 2804.76,
+  "payments": 9282,
+  "payers": 659,
+  "activeSellers": 145,
   "listedSellers": 1977,
   "biggest": {
     "usd": 1000.02,
     "seller": "Bitrefill"
   },
   "perHourUsd": [
-    115.97,
-    16.97,
-    8.84,
-    15.42,
-    32.98,
-    261.15,
-    18.25,
-    16.16,
-    7.54,
-    7.76,
-    142.87,
-    4.1,
+    7.46,
+    142.95,
+    4.2,
     35.91,
-    4.66,
-    22.6,
-    1014.61,
-    304.52,
-    7.29,
-    24.94,
-    6.85,
+    4.62,
+    22.67,
+    1014.71,
+    305.04,
+    6.69,
+    24.84,
+    6.93,
     452.56,
-    6.87,
-    14.84,
-    25.03
+    7.04,
+    14.68,
+    25.15,
+    14.62,
+    198.14,
+    5.78,
+    49.59,
+    9.32,
+    16.05,
+    406.1,
+    21.11,
+    8.61
   ],
   "top": [
     {
       "seller": "Bitrefill",
       "host": "api.bitrefill.com",
-      "usd": 1907.06,
-      "payments": 18
+      "usd": 2117.92,
+      "payments": 17
     },
     {
       "seller": "api.cleave.fi",
       "host": "api.cleave.fi",
-      "usd": 328.29,
-      "payments": 3
+      "usd": 339.88,
+      "payments": 4
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 138.4,
+      "usd": 129.9,
       "payments": 66
     },
     {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 104.37,
-      "payments": 5380
-    },
-    {
-      "seller": "BotPay NFT Mint",
-      "host": "api.botpay.network",
-      "usd": 32,
-      "payments": 320
+      "usd": 102.93,
+      "payments": 5340
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 12.33,
-      "payments": 466
+      "usd": 42.34,
+      "payments": 471
+    },
+    {
+      "seller": "win.oneshotagent.com",
+      "host": "win.oneshotagent.com",
+      "usd": 21.86,
+      "payments": 420
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 6.6,
-      "payments": 332
+      "usd": 7.86,
+      "payments": 395
     },
     {
-      "seller": "Apify",
-      "host": "agi.apify.com",
-      "usd": 6,
-      "payments": 4
+      "seller": "Losbeto Market Intelligence",
+      "host": "api.losbeto.xyz",
+      "usd": 6.56,
+      "payments": 110
     },
     {
       "seller": "taiwan-business-day-live.wuryan529.workers.dev",
@@ -101,65 +101,81 @@
       "seller": "Laso Finance",
       "host": "laso.finance",
       "usd": 5,
-      "payments": 4
+      "payments": 3
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 104.37,
-      "payments": 5380,
-      "wallets": 342,
-      "cameBack": 62,
-      "topWalletShare": 0.128
-    },
-    {
-      "seller": "Pocket Network",
-      "usd": 1.93,
-      "payments": 386,
-      "wallets": 35,
-      "cameBack": 33,
-      "topWalletShare": 0.08
+      "usd": 102.93,
+      "payments": 5340,
+      "wallets": 368,
+      "cameBack": 103,
+      "topWalletShare": 0.127
     },
     {
       "seller": "Clash of Coins",
-      "usd": 6.6,
-      "payments": 332,
-      "wallets": 312,
-      "cameBack": 20,
-      "topWalletShare": 0.006
+      "usd": 7.86,
+      "payments": 395,
+      "wallets": 339,
+      "cameBack": 56,
+      "topWalletShare": 0.005
+    },
+    {
+      "seller": "Pocket Network",
+      "usd": 1.91,
+      "payments": 383,
+      "wallets": 36,
+      "cameBack": 34,
+      "topWalletShare": 0.076
     },
     {
       "seller": "x402.dtelecom.org",
-      "usd": 138.4,
+      "usd": 129.9,
       "payments": 66,
       "wallets": 18,
-      "cameBack": 13,
-      "topWalletShare": 0.167
+      "cameBack": 12,
+      "topWalletShare": 0.182
     },
     {
-      "seller": "StableEnrich",
-      "usd": 1.27,
-      "payments": 75,
-      "wallets": 7,
-      "cameBack": 6,
-      "topWalletShare": 0.507
-    },
-    {
-      "seller": "Grokzilla x402 Micro Pay",
-      "usd": 0.11,
-      "payments": 13,
-      "wallets": 5,
-      "cameBack": 4,
-      "topWalletShare": 0.308
+      "seller": "BlockRun.AI",
+      "usd": 2.91,
+      "payments": 161,
+      "wallets": 13,
+      "cameBack": 5,
+      "topWalletShare": 0.832
     },
     {
       "seller": "HALOWERK Energy",
       "usd": 0.05,
       "payments": 16,
-      "wallets": 6,
-      "cameBack": 4,
+      "wallets": 5,
+      "cameBack": 5,
       "topWalletShare": 0.313
+    },
+    {
+      "seller": "StableEnrich",
+      "usd": 0.54,
+      "payments": 54,
+      "wallets": 4,
+      "cameBack": 4,
+      "topWalletShare": 0.537
+    },
+    {
+      "seller": "Nansen",
+      "usd": 0.48,
+      "payments": 20,
+      "wallets": 8,
+      "cameBack": 4,
+      "topWalletShare": 0.25
+    },
+    {
+      "seller": "Grokzilla x402 Micro Pay",
+      "usd": 0.11,
+      "payments": 12,
+      "wallets": 4,
+      "cameBack": 4,
+      "topWalletShare": 0.333
     },
     {
       "seller": "WickedAPI Trading Data API",
@@ -168,28 +184,12 @@
       "wallets": 4,
       "cameBack": 4,
       "topWalletShare": 0.3
-    },
-    {
-      "seller": "BlockRun.AI",
-      "usd": 2.78,
-      "payments": 176,
-      "wallets": 12,
-      "cameBack": 3,
-      "topWalletShare": 0.824
-    },
-    {
-      "seller": "GEDX402 Chat",
-      "usd": 0.44,
-      "payments": 14,
-      "wallets": 4,
-      "cameBack": 2,
-      "topWalletShare": 0.714
     }
   ],
   "wallets": {
-    "wallets": 942,
-    "paidOnce": 507,
-    "top10Share": 0.512
+    "wallets": 659,
+    "paidOnce": 189,
+    "top10Share": 0.555
   },
-  "tookMs": 40242
+  "tookMs": 49902
 }
