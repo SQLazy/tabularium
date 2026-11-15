@@ -1,157 +1,173 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-15T01:15:26.000Z",
+  "asOf": "2026-11-15T02:20:07.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 57531557,
-    "toBlock": 57574756
+    "fromBlock": 57550960,
+    "toBlock": 57594159
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 1474.02,
-  "payments": 16499,
-  "payers": 627,
-  "activeSellers": 110,
+  "usd": 1224.21,
+  "payments": 18629,
+  "payers": 622,
+  "activeSellers": 152,
   "listedSellers": 1981,
   "biggest": {
     "usd": 512.51,
     "seller": "Bitrefill"
   },
   "perHourUsd": [
-    17.64,
-    15.85,
-    15.68,
-    59.5,
-    22.03,
-    10.72,
-    259.79,
-    15.8,
-    47.38,
-    12.31,
-    17.75,
-    9.19,
-    27.95,
-    12.22,
-    12.94,
-    13.92,
-    10.03,
-    27.94,
-    17.68,
-    38.06,
-    36.39,
-    609.01,
-    150.76,
-    13.48
+    12.61,
+    27.82,
+    12.01,
+    12.75,
+    13.42,
+    10.37,
+    28.33,
+    15.97,
+    36.61,
+    22.61,
+    625.53,
+    22.26,
+    141.54,
+    18.42,
+    20.96,
+    29.73,
+    15.4,
+    20.11,
+    16.84,
+    36.76,
+    26.67,
+    17.15,
+    24.19,
+    16.18
   ],
   "top": [
     {
       "seller": "Bitrefill",
       "host": "api.bitrefill.com",
-      "usd": 832.53,
-      "payments": 9
-    },
-    {
-      "seller": "api.cleave.fi",
-      "host": "api.cleave.fi",
-      "usd": 243.88,
-      "payments": 6
+      "usd": 592.52,
+      "payments": 8
     },
     {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 217.51,
-      "payments": 11263
+      "usd": 276.34,
+      "payments": 14188
+    },
+    {
+      "seller": "api.cleave.fi",
+      "host": "api.cleave.fi",
+      "usd": 203.09,
+      "payments": 6
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 107.7,
-      "payments": 52
-    },
-    {
-      "seller": "win.oneshotagent.com",
-      "host": "win.oneshotagent.com",
-      "usd": 21.85,
-      "payments": 722
+      "usd": 96.5,
+      "payments": 45
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 15.5,
-      "payments": 775
+      "usd": 14.84,
+      "payments": 745
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 11.52,
-      "payments": 2303
+      "usd": 5.12,
+      "payments": 1025
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 5.5,
-      "payments": 110
+      "usd": 4.75,
+      "payments": 95
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 3.38,
-      "payments": 108
+      "usd": 3.32,
+      "payments": 155
+    },
+    {
+      "seller": "win.oneshotagent.com",
+      "host": "win.oneshotagent.com",
+      "usd": 3.21,
+      "payments": 558
     },
     {
       "seller": "Agents Trust",
       "host": "api.agents-trust.com",
-      "usd": 2.3,
-      "payments": 230
+      "usd": 2.25,
+      "payments": 225
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 217.51,
-      "payments": 11263,
+      "usd": 276.34,
+      "payments": 14188,
       "wallets": 356,
-      "cameBack": 354,
-      "topWalletShare": 0.123
+      "cameBack": 353,
+      "topWalletShare": 0.097
     },
     {
       "seller": "Clash of Coins",
-      "usd": 15.5,
-      "payments": 775,
-      "wallets": 324,
-      "cameBack": 323,
+      "usd": 14.84,
+      "payments": 745,
+      "wallets": 327,
+      "cameBack": 318,
       "topWalletShare": 0.004
     },
     {
       "seller": "Pocket Network",
-      "usd": 1.9,
-      "payments": 380,
-      "wallets": 35,
+      "usd": 2.07,
+      "payments": 414,
+      "wallets": 37,
       "cameBack": 33,
-      "topWalletShare": 0.076
-    },
-    {
-      "seller": "x402.dtelecom.org",
-      "usd": 107.7,
-      "payments": 52,
-      "wallets": 11,
-      "cameBack": 9,
-      "topWalletShare": 0.327
+      "topWalletShare": 0.07
     },
     {
       "seller": "Glassnode",
-      "usd": 1.1,
-      "payments": 22,
+      "usd": 1.85,
+      "payments": 37,
+      "wallets": 10,
+      "cameBack": 10,
+      "topWalletShare": 0.162
+    },
+    {
+      "seller": "x402.dtelecom.org",
+      "usd": 96.5,
+      "payments": 45,
       "wallets": 9,
-      "cameBack": 7,
-      "topWalletShare": 0.273
+      "cameBack": 6,
+      "topWalletShare": 0.333
     },
     {
       "seller": "BlockRun.AI",
-      "usd": 3.38,
-      "payments": 108,
-      "wallets": 8,
+      "usd": 3.32,
+      "payments": 155,
+      "wallets": 9,
       "cameBack": 5,
-      "topWalletShare": 0.611
+      "topWalletShare": 0.716
+    },
+    {
+      "seller": "win.oneshotagent.com",
+      "usd": 3.21,
+      "payments": 558,
+      "wallets": 4,
+      "cameBack": 4,
+      "topWalletShare": 0.652
+    },
+    {
+      "seller": "StableEnrich",
+      "usd": 1.28,
+      "payments": 66,
+      "wallets": 4,
+      "cameBack": 4,
+      "topWalletShare": 0.682
     },
     {
       "seller": "Crypto price",
@@ -163,33 +179,17 @@
     },
     {
       "seller": "Nansen",
-      "usd": 0.56,
-      "payments": 16,
+      "usd": 0.51,
+      "payments": 15,
       "wallets": 8,
       "cameBack": 3,
-      "topWalletShare": 0.313
-    },
-    {
-      "seller": "win.oneshotagent.com",
-      "usd": 21.85,
-      "payments": 722,
-      "wallets": 2,
-      "cameBack": 2,
-      "topWalletShare": 0.73
-    },
-    {
-      "seller": "Agents Trust",
-      "usd": 2.3,
-      "payments": 230,
-      "wallets": 2,
-      "cameBack": 2,
-      "topWalletShare": 0.991
+      "topWalletShare": 0.333
     }
   ],
   "wallets": {
-    "wallets": 627,
-    "paidOnce": 163,
-    "top10Share": 0.581
+    "wallets": 622,
+    "paidOnce": 149,
+    "top10Share": 0.47
   },
-  "tookMs": 61752
+  "tookMs": 95011
 }
