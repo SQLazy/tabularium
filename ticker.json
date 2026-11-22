@@ -1,195 +1,195 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-22T04:17:22.000Z",
+  "asOf": "2026-11-22T05:15:26.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 60610133,
-    "toBlock": 60653332
+    "fromBlock": 60627554,
+    "toBlock": 60670753
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 1615.2,
-  "payments": 31588,
-  "payers": 834,
-  "activeSellers": 101,
+  "usd": 1137.94,
+  "payments": 32858,
+  "payers": 829,
+  "activeSellers": 112,
   "listedSellers": 2080,
   "biggest": {
-    "usd": 304.64,
+    "usd": 198.75,
     "seller": "Bitrefill"
   },
   "perHourUsd": [
-    35.91,
-    320.22,
-    17.32,
-    19.37,
-    53.48,
-    28.44,
-    284.32,
-    42.45,
-    22.15,
-    26.54,
-    25.18,
-    145.26,
-    25.43,
-    24.38,
-    44.54,
-    41.54,
-    251.6,
-    19.98,
+    25.92,
+    144.71,
+    26.28,
+    25.58,
+    21.54,
+    65.86,
+    249.9,
     20.28,
-    18.71,
-    43.8,
-    63.14,
-    20.3,
-    20.88
+    21.34,
+    17.58,
+    43.93,
+    62.87,
+    20.67,
+    20.75,
+    21.12,
+    23.37,
+    114.14,
+    27.22,
+    19.53,
+    23.31,
+    23.12,
+    66.77,
+    24.29,
+    27.86
   ],
   "top": [
     {
-      "seller": "Bitrefill",
-      "host": "api.bitrefill.com",
-      "usd": 958.04,
-      "payments": 8
-    },
-    {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 455.32,
-      "payments": 23204
+      "usd": 483.77,
+      "payments": 24631
+    },
+    {
+      "seller": "Bitrefill",
+      "host": "api.bitrefill.com",
+      "usd": 479.04,
+      "payments": 7
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 83.36,
-      "payments": 4678
+      "usd": 83.31,
+      "payments": 4669
     },
     {
       "seller": "Cleave Protocol",
       "host": "api.cleave.fi",
-      "usd": 51.53,
-      "payments": 3
+      "usd": 24.96,
+      "payments": 2
     },
     {
       "seller": "OneShot",
       "host": "win.oneshotagent.com",
-      "usd": 18.95,
-      "payments": 768
+      "usd": 21.26,
+      "payments": 594
     },
     {
       "seller": "Clash of Coins",
       "host": "x402.clashofcoins.com",
-      "usd": 17.52,
-      "payments": 876
+      "usd": 17.7,
+      "payments": 885
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 5.75,
-      "payments": 115
+      "usd": 4.55,
+      "payments": 91
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 4.73,
-      "payments": 472
+      "usd": 3.65,
+      "payments": 479
+    },
+    {
+      "seller": "CheapTokens AI Inference",
+      "host": "cheaptokens.ai",
+      "usd": 2.67,
+      "payments": 1
     },
     {
       "seller": "Agents Trust",
       "host": "api.agents-trust.com",
-      "usd": 2.43,
-      "payments": 245
-    },
-    {
-      "seller": "Weather Forecast & Air Quality",
-      "host": "api.kadec0.xyz",
-      "usd": 2.09,
-      "payments": 85
+      "usd": 2.45,
+      "payments": 247
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 455.32,
-      "payments": 23204,
-      "wallets": 556,
-      "cameBack": 546,
-      "topWalletShare": 0.034
+      "usd": 483.77,
+      "payments": 24631,
+      "wallets": 570,
+      "cameBack": 565,
+      "topWalletShare": 0.033
     },
     {
       "seller": "Clash of Coins",
-      "usd": 17.52,
-      "payments": 876,
-      "wallets": 402,
-      "cameBack": 383,
+      "usd": 17.7,
+      "payments": 885,
+      "wallets": 406,
+      "cameBack": 397,
       "topWalletShare": 0.003
     },
     {
       "seller": "Pocket Network",
-      "usd": 2.01,
-      "payments": 403,
+      "usd": 1.97,
+      "payments": 395,
       "wallets": 36,
-      "cameBack": 33,
-      "topWalletShare": 0.077
+      "cameBack": 34,
+      "topWalletShare": 0.073
     },
     {
       "seller": "BlockRun.AI",
-      "usd": 4.73,
-      "payments": 472,
-      "wallets": 36,
+      "usd": 3.65,
+      "payments": 479,
+      "wallets": 28,
       "cameBack": 18,
-      "topWalletShare": 0.273
+      "topWalletShare": 0.209
     },
     {
       "seller": "Nansen",
-      "usd": 0.45,
-      "payments": 25,
-      "wallets": 10,
-      "cameBack": 5,
-      "topWalletShare": 0.28
+      "usd": 0.5,
+      "payments": 26,
+      "wallets": 11,
+      "cameBack": 6,
+      "topWalletShare": 0.231
     },
     {
       "seller": "OneShot",
-      "usd": 18.95,
-      "payments": 768,
-      "wallets": 5,
+      "usd": 21.26,
+      "payments": 594,
+      "wallets": 6,
       "cameBack": 4,
-      "topWalletShare": 0.878
+      "topWalletShare": 0.912
     },
     {
       "seller": "X Pay",
-      "usd": 83.36,
-      "payments": 4678,
-      "wallets": 5,
+      "usd": 83.31,
+      "payments": 4669,
+      "wallets": 4,
       "cameBack": 3,
-      "topWalletShare": 0.367
+      "topWalletShare": 0.368
     },
     {
       "seller": "Agents Trust",
-      "usd": 2.43,
-      "payments": 245,
+      "usd": 2.45,
+      "payments": 247,
       "wallets": 3,
       "cameBack": 3,
       "topWalletShare": 0.984
     },
     {
-      "seller": "Weather Forecast & Air Quality",
-      "usd": 2.09,
-      "payments": 85,
+      "seller": "StableEnrich",
+      "usd": 1.92,
+      "payments": 270,
       "wallets": 2,
       "cameBack": 2,
-      "topWalletShare": 0.976
+      "topWalletShare": 0.993
     },
     {
-      "seller": "BlockRun.AI",
-      "usd": 0.09,
-      "payments": 10,
+      "seller": "Weather Forecast & Air Quality",
+      "usd": 0.82,
+      "payments": 40,
       "wallets": 3,
       "cameBack": 2,
-      "topWalletShare": 0.7
+      "topWalletShare": 0.925
     }
   ],
   "wallets": {
-    "wallets": 834,
-    "paidOnce": 183,
-    "top10Share": 0.288
+    "wallets": 829,
+    "paidOnce": 157,
+    "top10Share": 0.269
   },
-  "tookMs": 34846
+  "tookMs": 48284
 }
