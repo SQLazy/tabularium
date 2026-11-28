@@ -1,195 +1,195 @@
 {
   "schema": "tabularium/ayb/v1",
-  "asOf": "2026-11-28T14:14:40.000Z",
+  "asOf": "2026-11-28T15:13:51.000Z",
   "window": {
     "hours": 24,
-    "fromBlock": 63381325,
-    "toBlock": 63424524
+    "fromBlock": 63399079,
+    "toBlock": 63442278
   },
   "definition": "USDC paid on Base to payees listed on Coinbase's x402 Bazaar, in transactions that used an EIP-3009 authorization (the x402 'exact' scheme). Public chain data; payee names from the Bazaar.",
-  "usd": 6416.07,
-  "payments": 31687,
-  "payers": 650,
-  "activeSellers": 113,
+  "usd": 4012.67,
+  "payments": 26858,
+  "payers": 609,
+  "activeSellers": 101,
   "listedSellers": 2130,
   "biggest": {
-    "usd": 1228.18,
+    "usd": 998.3,
     "seller": "Bitrefill"
   },
   "perHourUsd": [
-    26.76,
-    2232.43,
-    27.1,
-    21.49,
-    23.02,
-    27.55,
-    905.28,
-    38.88,
-    29.4,
-    28.76,
-    22.52,
-    448.78,
-    51.37,
-    25.82,
-    29.95,
-    20.26,
-    1977.55,
-    30.41,
-    32.71,
-    51.11,
-    24.06,
-    274.09,
-    33.79,
-    32.97
+    27.15,
+    448.65,
+    46.33,
+    26.61,
+    30.54,
+    24.2,
+    1970.98,
+    26.16,
+    41.83,
+    52.35,
+    25.13,
+    270,
+    35.81,
+    33.58,
+    17.27,
+    19.5,
+    183.08,
+    30.12,
+    30.07,
+    23.92,
+    40.94,
+    549.07,
+    27.37,
+    31.99
   ],
   "top": [
     {
       "seller": "Bitrefill",
       "host": "api.bitrefill.com",
-      "usd": 5654.43,
-      "payments": 25
+      "usd": 3300.94,
+      "payments": 22
     },
     {
       "seller": "AX1 Console",
       "host": "ax1-new.vercel.app",
-      "usd": 440.59,
-      "payments": 23665
+      "usd": 368.72,
+      "payments": 19680
     },
     {
       "seller": "x402.dtelecom.org",
       "host": "x402.dtelecom.org",
-      "usd": 117.6,
-      "payments": 62
+      "usd": 136.7,
+      "payments": 65
     },
     {
       "seller": "Cleave Protocol",
       "host": "api.cleave.fi",
-      "usd": 79.59,
-      "payments": 5
+      "usd": 93.2,
+      "payments": 6
     },
     {
       "seller": "X Pay",
       "host": "www.api-xpay.com",
-      "usd": 76.18,
-      "payments": 5240
+      "usd": 60.94,
+      "payments": 4192
     },
     {
       "seller": "Clash of Coins Game Shop",
       "host": "x402.clashofcoins.com",
-      "usd": 11.02,
-      "payments": 551
+      "usd": 11.22,
+      "payments": 561
+    },
+    {
+      "seller": "Strale",
+      "host": "api.strale.io",
+      "usd": 7.23,
+      "payments": 71
     },
     {
       "seller": "BlockRun.AI",
       "host": "blockrun.ai",
-      "usd": 8.33,
-      "payments": 116
+      "usd": 6.85,
+      "payments": 117
     },
     {
       "seller": "api.messari.io",
       "host": "api.messari.io",
-      "usd": 4.25,
-      "payments": 17
+      "usd": 5.25,
+      "payments": 21
     },
     {
       "seller": "keyring-agent.blockchhub.link",
       "host": "keyring-agent.blockchhub.link",
-      "usd": 4.25,
-      "payments": 85
-    },
-    {
-      "seller": "CheapTokens AI Inference",
-      "host": "cheaptokens.ai",
-      "usd": 2.77,
-      "payments": 1
+      "usd": 3.3,
+      "payments": 66
     }
   ],
   "demand": [
     {
       "seller": "AX1 Console",
-      "usd": 440.59,
-      "payments": 23665,
-      "wallets": 376,
-      "cameBack": 350,
-      "topWalletShare": 0.157
+      "usd": 368.72,
+      "payments": 19680,
+      "wallets": 364,
+      "cameBack": 335,
+      "topWalletShare": 0.112
     },
     {
       "seller": "Clash of Coins Game Shop",
-      "usd": 11.02,
-      "payments": 551,
-      "wallets": 296,
-      "cameBack": 255,
+      "usd": 11.22,
+      "payments": 561,
+      "wallets": 300,
+      "cameBack": 261,
       "topWalletShare": 0.004
     },
     {
       "seller": "Pocket Network",
-      "usd": 2.02,
-      "payments": 404,
+      "usd": 1.94,
+      "payments": 388,
       "wallets": 38,
-      "cameBack": 36,
-      "topWalletShare": 0.069
+      "cameBack": 35,
+      "topWalletShare": 0.077
     },
     {
       "seller": "x402.dtelecom.org",
-      "usd": 117.6,
-      "payments": 62,
+      "usd": 136.7,
+      "payments": 65,
       "wallets": 17,
-      "cameBack": 12,
-      "topWalletShare": 0.177
+      "cameBack": 13,
+      "topWalletShare": 0.185
     },
     {
       "seller": "BlockRun.AI",
-      "usd": 8.33,
-      "payments": 116,
-      "wallets": 13,
-      "cameBack": 9,
-      "topWalletShare": 0.267
+      "usd": 6.85,
+      "payments": 117,
+      "wallets": 12,
+      "cameBack": 8,
+      "topWalletShare": 0.462
     },
     {
       "seller": "api.loyalspark.online",
-      "usd": 0.13,
-      "payments": 28,
+      "usd": 0.15,
+      "payments": 27,
       "wallets": 20,
-      "cameBack": 7,
-      "topWalletShare": 0.107
-    },
-    {
-      "seller": "StableEnrich",
-      "usd": 2.37,
-      "payments": 30,
-      "wallets": 4,
-      "cameBack": 3,
-      "topWalletShare": 0.367
+      "cameBack": 5,
+      "topWalletShare": 0.111
     },
     {
       "seller": "Exa",
-      "usd": 0.25,
-      "payments": 35,
+      "usd": 0.29,
+      "payments": 41,
       "wallets": 4,
-      "cameBack": 3,
-      "topWalletShare": 0.743
+      "cameBack": 4,
+      "topWalletShare": 0.683
     },
     {
-      "seller": "x402.openwebninja.com",
-      "usd": 0.07,
-      "payments": 19,
+      "seller": "StableEnrich",
+      "usd": 2.55,
+      "payments": 44,
       "wallets": 3,
       "cameBack": 3,
-      "topWalletShare": 0.474
+      "topWalletShare": 0.591
     },
     {
       "seller": "X Pay",
-      "usd": 76.18,
-      "payments": 5240,
+      "usd": 60.94,
+      "payments": 4192,
       "wallets": 2,
       "cameBack": 2,
       "topWalletShare": 0.999
+    },
+    {
+      "seller": "agent demand radar",
+      "usd": 0.21,
+      "payments": 151,
+      "wallets": 2,
+      "cameBack": 2,
+      "topWalletShare": 0.987
     }
   ],
   "wallets": {
-    "wallets": 650,
-    "paidOnce": 162,
-    "top10Share": 0.658
+    "wallets": 609,
+    "paidOnce": 140,
+    "top10Share": 0.535
   },
-  "tookMs": 67058
+  "tookMs": 29052
 }
